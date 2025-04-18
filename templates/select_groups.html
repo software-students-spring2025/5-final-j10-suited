@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Select Interest Groups</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}">
+    <style>
+      body {
+        margin: 0;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f0f2f5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+      }
+
+      .group-container {
+        background-color: white;
+        padding: 40px;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        width: 100%;
+        max-width: 500px;
+      }
+
+      h1 {
+        font-size: 28px;
+        margin-bottom: 10px;
+        color: #57068c;
+      }
+
+      h4 {
+        margin-bottom: 30px;
+        color: #444;
+      }
+
+      .group-options {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+        margin-bottom: 25px;
+      }
+
+      .group-options label {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 18px;
+        background-color: #f4f0fa;
+        padding: 12px 16px;
+        border-radius: 8px;
+        width: 100%;
+        transition: background-color 0.2s;
+        cursor: pointer;
+      }
+
+      .group-options input[type="checkbox"] {
+        transform: scale(1.2);
+        accent-color: #57068c;
+      }
+
+      .custom-group {
+        margin-bottom: 20px;
+        text-align: left;
+      }
+
+      .custom-group label {
+        font-size: 16px;
+        display: block;
+        margin-bottom: 8px;
+      }
+
+      .custom-group input[type="text"] {
+        width: 100%;
+        padding: 10px;
+        font-size: 16px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        margin-bottom: 10px;
+      }
+
+      .add-group-button,
+      .submit-button {
+        background-color: #57068c;
+        color: white;
+        border: none;
+        padding: 12px 20px;
+        font-size: 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+
+      .add-group-button:hover,
+      .submit-button:hover {
+        background-color: #3f056b;
+      }
+
+      .error-message {
+        margin-top: 10px;
+        color: red;
+        font-size: 15px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="group-container">
+      <h1>Select Your Interest Groups</h1>
+      <h4>Join groups to meet people with similar interests!</h4>
+
+      <!-- Form to add new group -->
+      <form method="POST" action="{{ url_for('add_group') }}">
+        <div class="custom-group">
+          <label for="custom-group-input">Don't see your group? Add your own:</label>
+          <input type="text" id="custom-group-input" name="custom_group" placeholder="e.g., Chess Club" required>
+          <button type="submit" class="add-group-button">Add Group</button>
+
+          {% if error %}
+            <div class="error-message">{{ error }}</div>
+          {% endif %}
+        </div>
+      </form>
+
+      <!-- Form to select groups and submit -->
+      <form method="POST" action="{{ url_for('save_groups') }}">
+        <div class="group-options">
+          {% for group in groups %}
+            <label><input type="checkbox" name="groups" value="{{ group }}"> {{ group }}</label>
+          {% endfor %}
+        </div>
+
+        <button type="submit" class="submit-button">Join Selected Groups</button>
+      </form>
+    </div>
+  </body>
+</html>
