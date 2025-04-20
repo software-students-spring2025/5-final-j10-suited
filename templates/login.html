@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - NYU SSO</title>
+    <link rel="stylesheet" type="text/css" href="../static/css/styles.css">
+  </head>
+  <body>
+    <div class="login-container">
+        <h1 class="app-title">Name of app</h1>
+        <h2 class="login-heading">Login with your NYU NetID</h2>
+
+      <!-- Button that redirects user to NYU SSO -->
+      <form method="GET" action="{{ url_for('login') }}">
+        <button type="submit" class="nyu-login-button">Login with NYU</button>
+      </form>
+
+      {% if error %}
+        <p class="error-message">{{ error }}</p>
+      {% endif %}
+    </div>
+  </body>
+</html>
