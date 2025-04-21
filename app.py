@@ -1,7 +1,34 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+import os
+from dotenv import load_dotenv
+import pymongo
+import certifi
+from flask import Flask, render_template, request, redirect, url_for, session, flash, abort
 
+load_dotenv()
 app = Flask(__name__)
-app.secret_key = 'super_secret'
+
+# initialize database
+mongo = pymongo.MongoClient(
+    os.getenv(
+        "MONGO_URI",
+        "mongodb://admin:secretpassword@localhost:27017/gesture_auth?authSource=admin",
+    ),
+    tlsCAFile=certifi.where(), ssl = True
+)
+db = mongo[os.getenv("MONGO_DBNAME", "test_db")]
+app.config["MONGO_URI"] = os.getenv(
+        "MONGO_URI",
+        "mongodb://admin:secretpassword@localhost:27017/gesture_auth?authSource=admin",
+    )
+app.secret_key = os.getenv("SECRET_KEY", "secretsecretkey")
+
+#temporary- just for making sure that db connection works
+@app.route('/test_db')
+def test_db():
+    user = db.Users.find_one({"name": "test"})
+    if not user:
+        return abort(404, "User not found")
+    return user["name"]
 
 #need to fill in for how to connect to NYU SSO
 @app.route('/login', methods=["GET", "POST"])
