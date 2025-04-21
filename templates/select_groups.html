@@ -25,6 +25,16 @@
         </div>
       </form>
 
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="messages">
+            {% for category, message in messages %}
+              <p class="{{ category }}">{{ message }}</p>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+
       <!-- Form to select groups and submit -->
       <form method="POST" action="{{ url_for('save_groups') }}">
         <div class="group-options">
