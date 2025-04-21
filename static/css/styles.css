@@ -157,3 +157,47 @@ h4 {
   display: flex;
   flex-direction: column;
 }
+
+.messages {
+  margin-top: 15px;
+}
+
+.profile-container {
+  background-color: white;
+  padding: 40px;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 500px;
+  text-align: center;
+}
+
+.profile-container h1 {
+  font-size: 30px;
+  margin-bottom: 30px;
+  color: #57068c;
+}
+
+.profile-picture {
+  margin-bottom: 20px;
+  font-size: 16px;
+  color: #555;
+}
+
+.profile-name,
+.profile-age,
+.profile-grade,
+.profile-groups {
+  margin-bottom: 15px;
+  font-size: 18px;
+  color: #333;
+}
+
+.profile-groups span {
+  display: inline-block;
+  background-color: #f4f0fa;
+  padding: 5px 10px;
+  margin: 3px;
+  border-radius: 8px;
+  font-size: 16px;
+}
