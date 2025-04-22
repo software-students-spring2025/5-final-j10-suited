@@ -53,10 +53,12 @@ class User(UserMixin):
         self.email = data.get('email')
         self.verified = data.get('verified', False)
 
+
 @login_manager.user_loader
 def load_user(user_id):
     data = db.Users.find_one({'_id': ObjectId(user_id)})
     return User(data) if data else None
+
 
 #temporary- just for making sure that db connection works
 @app.route('/test_db')
@@ -66,9 +68,11 @@ def test_db():
         return abort(404, "User not found")
     return user["name"]
 
+
 @app.route('/home')
 def home():
     return render_template("home.html")
+
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -117,6 +121,7 @@ def register():
 
     return render_template('register.html')
 
+
 @app.route('/verify-email', methods=['GET', 'POST'])
 def verify_email():
     email = request.args.get('email')
@@ -140,6 +145,7 @@ def verify_email():
 
     return render_template('verify_email.html', email=email)
 
+
 #need to fill in for how to connect to NYU SSO
 @app.route('/login', methods=["GET", "POST"])
 def login():
@@ -162,12 +168,20 @@ def login():
 
     return render_template('login.html')
 
+
 #select groups html page
 @app.route("/select_groups", methods=["GET"])
 def select_groups():
-    if "groups" not in session:
-        session["groups"] = ["Running", "Swimming", "Music", "Photography", "Cooking", "Coding"]
+    for group_name in ['Running', 'Swimming', 'Music', 'Photography', 'Cooking', 'Coding']:
+        group = {
+            'name': group_name,
+            'owner': 'default',
+            'members': []
+        }
+        db.Groups.insert_one(group)
+    groups = db.Groups.find()
     return render_template("select_groups.html", groups=session["groups"], error=None)
+
 
 @app.route("/add_group", methods=["POST"])
 def add_group():
@@ -182,6 +196,7 @@ def add_group():
     session["groups"].append(new_group)
     return redirect(url_for("select_groups"))
 
+
 @app.route("/save_groups", methods=["POST"])
 def save_groups():
     selected_groups = request.form.getlist("groups")
@@ -189,6 +204,7 @@ def save_groups():
     session['selected_groups'] = selected_groups    # testing profile, should save to database instead
     flash("Groups saved!", "success")
     return redirect(url_for("select_groups"))
+
 
 @app.route("/profile")
 def profile():
@@ -211,6 +227,19 @@ def profile():
         'groups': session.get('selected_groups', ['None joined yet'])
     }
     return render_template("profile.html", profile=profile)
+
+
+@app.route('/group_browser')
+def group_browser():
+    groups = db.Groups.find()
+    groups = session.get('groups', ['None found. Create the first!'])
+    return render_template('group_browser.html', groups=groups)
+
+
+@app.route('/')
+def index():
+    return redirect(url_for('login'))
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5001, debug=True)
