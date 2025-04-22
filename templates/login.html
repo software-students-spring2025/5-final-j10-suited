@@ -11,9 +11,15 @@
         <h1 class="app-title">Name of app</h1>
         <h2 class="login-heading">Login with your NYU NetID</h2>
 
-      <!-- Button that redirects user to NYU SSO -->
+      <!-- Button that redirects user to NYU SSO 
       <form method="GET" action="{{ url_for('login') }}">
         <button type="submit" class="nyu-login-button">Login with NYU</button>
+      </form>
+      -->
+      <form method="POST" action="{{ url_for('login') }}">
+        <input type="email"   name="email"            placeholder="NYU Email" required>
+        <input type="password"name="password"         placeholder="Password" required>
+        <button type="submit" class="nyu-login-button">Login</button>
       </form>
 
       {% if error %}
