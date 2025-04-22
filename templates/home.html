@@ -10,11 +10,14 @@
   </head>
   <body>
     <!--placeholder, just to test that login system works-->
-    {% if current_user.is_authenticated %}
-        <h1>{{ current_user.email }}</h1>
-    {% else %}
-        <h1>Not logged in</h1>
-    {% endif %}
+    <div class="login-container">
+      <h1 class="app-title">Welcome</h1>
+      {% if current_user.is_authenticated %}
+          <h2 class="login-heading">Logged in as: {{ current_user.email }}</h2>
+      {% else %}
+          <h2 class="login-heading">You are not logged in.</h2>
+      {% endif %}
+    </div>
     
   </body>
 </html>

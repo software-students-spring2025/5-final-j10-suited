@@ -7,13 +7,24 @@
   </head>
   <body>
     <div class="login-container">
-      <h1>Verify Your Email</h1>
-      <p>We've sent a code to {{ email }}. Enter it below to finish registration.</p>
+      <h1 class="app-title">Verify Your Email</h1>
+      <p>We've sent a code to <strong>{{ email }}</strong>. Enter it below to finish registration.</p>
       <form method="POST">
-        <input type="text" name="code" placeholder="6-digit code" required>
+        <input 
+        type="text"
+        name="code"
+        placeholder="Enter 6-digit code"
+        class="verification-code-input"
+        inputmode="numeric"
+        pattern="\d{6}"
+        maxlength="6"
+        required
+        >
         <button type="submit" class="nyu-login-button">Verify</button>
       </form>
-      {% if error %}<p class="error-message">{{ error }}</p>{% endif %}
+      {% if error %}
+        <p class="error-message">{{ error }}</p>
+      {% endif %}
     </div>
   </body>
 </html>
