@@ -1,8 +1,17 @@
 import os
+import random
 from dotenv import load_dotenv
+from bson.objectid import ObjectId
 import pymongo
 import certifi
 from flask import Flask, render_template, request, redirect, url_for, session, flash, abort
+from flask_login import (
+    LoginManager, UserMixin,
+    login_user, login_required,
+    logout_user, current_user
+)
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_mail import Mail, Message
 
 load_dotenv()
 app = Flask(__name__)
@@ -13,7 +22,7 @@ mongo = pymongo.MongoClient(
         "MONGO_URI",
         "mongodb://admin:secretpassword@localhost:27017/gesture_auth?authSource=admin",
     ),
-    tlsCAFile=certifi.where(), ssl = True
+    tlsCAFile=certifi.where(), tls=True, 
 )
 db = mongo[os.getenv("MONGO_DBNAME", "test_db")]
 app.config["MONGO_URI"] = os.getenv(
@@ -21,6 +30,33 @@ app.config["MONGO_URI"] = os.getenv(
         "mongodb://admin:secretpassword@localhost:27017/gesture_auth?authSource=admin",
     )
 app.secret_key = os.getenv("SECRET_KEY", "secretsecretkey")
+
+app.config.update(
+    MAIL_SERVER=os.environ.get('MAIL_SERVER', 'smtp.example.com'),
+    MAIL_PORT=int(os.environ.get('MAIL_PORT', 587)),
+    MAIL_USE_TLS=True,
+    MAIL_USERNAME=os.environ.get('MAIL_USERNAME'),
+    MAIL_PASSWORD=os.environ.get('MAIL_PASSWORD'),
+    MAIL_DEFAULT_SENDER=os.environ.get('MAIL_DEFAULT_SENDER', 'noreply@example.com')
+)
+mail = Mail(app)
+
+#login manager setup
+login_manager = LoginManager(app)
+login_manager.login_view = "login"
+
+class User(UserMixin):
+    def __init__(self, data):
+        self.id = str(data['_id'])
+        self.first_name = data.get('first_name')
+        self.last_name = data.get('last_name')
+        self.email = data.get('email')
+        self.verified = data.get('verified', False)
+
+@login_manager.user_loader
+def load_user(user_id):
+    data = db.Users.find_one({'_id': ObjectId(user_id)})
+    return User(data) if data else None
 
 #temporary- just for making sure that db connection works
 @app.route('/test_db')
@@ -30,10 +66,101 @@ def test_db():
         return abort(404, "User not found")
     return user["name"]
 
+@app.route('/home')
+def home():
+    return render_template("home.html")
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        first_name = request.form['first_name']
+        last_name = request.form['last_name']
+        email = request.form['email']
+        password = request.form['password']
+        confirm  = request.form['confirm_password']
+
+        # Validations
+        #add validation that email is nyu
+        domain = email.split("@")[-1]
+        if domain != "nyu.edu":
+            flash('Must be an NYU email.', 'danger')
+            return render_template('register.html')
+        if db.Users.find_one({'email': email}):
+            flash('Email already registered.', 'danger')
+            return render_template('register.html')
+        if password != confirm:
+            flash('Passwords do not match.', 'danger')
+            return render_template('register.html')
+
+        # Hash password
+        hashed_pw = generate_password_hash(password)
+
+        # Generate verification code
+        code = str(random.randint(100000, 999999))
+
+        # Store user with unverified status
+        db.Users.insert_one({
+            'first_name': first_name,
+            'last_name': last_name,
+            'email': email,
+            'password': hashed_pw,
+            'verified': False,
+            'verification_code': code
+        })
+
+        # Send verification email
+        msg = Message('Your Verification Code', recipients=[email])
+        msg.body = f"Hi {first_name},\n\nYour verification code is: {code}\n\nEnter this on the site to complete registration."
+        mail.send(msg)
+
+        return redirect(url_for('verify_email', email=email))
+
+    return render_template('register.html')
+
+@app.route('/verify-email', methods=['GET', 'POST'])
+def verify_email():
+    email = request.args.get('email')
+    if request.method == 'POST':
+        code = request.form['code']
+        user = db.Users.find_one({'email': email})
+        if not user:
+            flash('Invalid request.')
+            return redirect(url_for('register'))
+
+        if user.get('verification_code') == code:
+            # Mark verified and remove code
+            db.Users.update_one(
+                {'email': email},
+                {'$set': {'verified': True}, '$unset': {'verification_code': ''}}
+            )
+            flash('Email verified! You can now log in.')
+            return redirect(url_for('login'))
+        else:
+            return render_template('verify_email.html', email=email, error='Incorrect code')
+
+    return render_template('verify_email.html', email=email)
+
 #need to fill in for how to connect to NYU SSO
 @app.route('/login', methods=["GET", "POST"])
 def login():
-    return render_template("login.html")
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+
+        data = db.Users.find_one({'email': email})
+        if not data or not check_password_hash(data['password'], password):
+            return render_template('login.html', error='Invalid email or password')
+
+        if not data.get('verified', False):
+            flash('Please verify your email before logging in.')
+            return redirect(url_for('verify_email', email=email))
+
+        user = User(data)
+        login_user(user)
+        flash('Logged in successfully.')
+        return redirect(url_for('home'))
+
+    return render_template('login.html')
 
 #select groups html page
 @app.route("/select_groups", methods=["GET"])
