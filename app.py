@@ -208,7 +208,7 @@ def profile():
         'name': "Jack",
         'age': 21,
         'grade': "Junior",
-        'groups': session.get('selected_groups', 'None joined yet.')
+        'groups': session.get('selected_groups', ['None joined yet'])
     }
     return render_template("profile.html", profile=profile)
 
