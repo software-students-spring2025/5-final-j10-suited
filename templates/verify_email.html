@@ -1,0 +1,19 @@
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Email</title>
+    <link rel="stylesheet" href="../static/css/styles.css">
+  </head>
+  <body>
+    <div class="login-container">
+      <h1>Verify Your Email</h1>
+      <p>We've sent a code to {{ email }}. Enter it below to finish registration.</p>
+      <form method="POST">
+        <input type="text" name="code" placeholder="6-digit code" required>
+        <button type="submit" class="nyu-login-button">Verify</button>
+      </form>
+      {% if error %}<p class="error-message">{{ error }}</p>{% endif %}
+    </div>
+  </body>
+</html>
