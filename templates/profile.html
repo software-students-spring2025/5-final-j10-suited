@@ -16,7 +16,7 @@
         <div class='profile-grade'>Grade: {{ profile['grade'] }}</div>
         <div class='profile-groups'>Groups:
         {% for group in profile['groups'] %}
-            <span>{{ group }}{% if not loop.last %},{% endif %}</span>
+            <span>{{ group }}</span>
         {% endfor %}
         </div>
     </div>
