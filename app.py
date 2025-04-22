@@ -192,6 +192,9 @@ def save_groups():
 
 @app.route("/profile")
 def profile():
+    #registration does not ask for grade, major, age etc. 
+    #should add "finish setting up profile" option here to add those things
+
     # get mongodb user from user_id
     # user = users_collection.find_one({"_id": session["user_id"]})
     # profile = {
