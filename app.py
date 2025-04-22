@@ -109,7 +109,8 @@ def register():
             'email': email,
             'password': hashed_pw,
             'verified': False,
-            'verification_code': code
+            'verification_code': code,
+            'joined_groups': []
         })
 
         # Send verification email
@@ -172,36 +173,59 @@ def login():
 #select groups html page
 @app.route("/select_groups", methods=["GET"])
 def select_groups():
-    for group_name in ['Running', 'Swimming', 'Music', 'Photography', 'Cooking', 'Coding']:
-        group = {
-            'name': group_name,
-            'owner': 'default',
-            'members': []
-        }
-        db.Groups.insert_one(group)
-    groups = db.Groups.find()
-    return render_template("select_groups.html", groups=session["groups"], error=None)
+    groups = db.Groups.find({})
+    user = db.Users.find_one({'_id': ObjectId(current_user.id)})
+    print('joined_groups:', user['joined_groups'])
+    joined_groups = user['joined_groups']
+    return render_template("select_groups.html", groups=groups, joined_groups=joined_groups, error=None)
 
 
 @app.route("/add_group", methods=["POST"])
 def add_group():
+    groups = db.Groups.find({})
     new_group = request.form.get("custom_group", "").strip()
     if not new_group:
-        return render_template("select_groups.html", groups=session["groups"], error="Please enter a group name.")
+        return render_template("select_groups.html", groups=groups, error="Please enter a group name.")
 
-    lowercased = [g.lower() for g in session["groups"]]
+    lowercased = [g['name'].lower() for g in groups]
     if new_group.lower() in lowercased:
-        return render_template("select_groups.html", groups=session["groups"], error="Group already exists.")
+        return render_template("select_groups.html", groups=groups, error="Group already exists.")
 
-    session["groups"].append(new_group)
+    user_name = current_user.first_name + ' ' + current_user.last_name
+    new_group_dict = {
+        'name': new_group,
+        'owner': ObjectId(current_user.id),
+        'members': []
+    }
+    db.Groups.insert_one(new_group_dict)
     return redirect(url_for("select_groups"))
 
 
 @app.route("/save_groups", methods=["POST"])
 def save_groups():
     selected_groups = request.form.getlist("groups")
-    print("User selected:", selected_groups)
-    session['selected_groups'] = selected_groups    # testing profile, should save to database instead
+    user_id = ObjectId(current_user.id)
+
+    user = db.Users.find_one({'_id': user_id})
+    old_groups = user.get('joined_groups', [])
+
+    db.Users.update_one(
+        {'_id': user_id},
+        {'$set': {'joined_groups': selected_groups}},
+    )
+
+    for group_name in selected_groups:
+        db.Groups.update_one(
+            {'name': group_name},
+            {'$addToSet': {'members': user_id}}
+        )
+
+    unchecked_groups = set(old_groups) - set(selected_groups)
+    for group_name in unchecked_groups:
+        db.Groups.update_one(
+            {'name': group_name},
+            {'$pull': {'members': user_id}}
+        )
     flash("Groups saved!", "success")
     return redirect(url_for("select_groups"))
 
@@ -232,7 +256,6 @@ def profile():
 @app.route('/group_browser')
 def group_browser():
     groups = db.Groups.find()
-    groups = session.get('groups', ['None found. Create the first!'])
     return render_template('group_browser.html', groups=groups)
 
 

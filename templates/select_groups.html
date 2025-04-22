@@ -40,11 +40,17 @@
       <form method="POST" action="{{ url_for('save_groups') }}">
         <div class="group-options">
           {% for group in groups %}
-            <label><input type="checkbox" name="groups" value="{{ group }}"> {{ group }}</label>
+            <label>
+              <input 
+                {% if group['name'] in joined_groups %}checked{% endif %}
+                type="checkbox" name="groups" value="{{ group['name'] }}"
+              >
+              {{ group['name'] }}
+            </label>
           {% endfor %}
         </div>
 
-        <button type="submit" class="submit-button">Join Selected Groups</button>
+        <button type="submit" class="submit-button">Update Groups</button>
       </form>
     </div>
   </body>

@@ -12,7 +12,7 @@
       <h1>Group Catalogue</h1>
         <div class='profile-groups'>Groups:
         {% for group in groups %}
-            <div>{{ group }}</div>
+            <div>{{ group['name'] }}</div>
         {% endfor %}
         </div>
     </div>
