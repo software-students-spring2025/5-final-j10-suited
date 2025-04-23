@@ -1,10 +1,10 @@
 import os
 import random
 from dotenv import load_dotenv
-from bson.objectid import ObjectId
+from bson import ObjectId, json_util
 import pymongo
 import certifi
-from flask import Flask, render_template, request, redirect, url_for, session, flash, abort
+from flask import Flask, render_template, request, redirect, url_for, session, flash, abort, jsonify
 from flask_login import (
     LoginManager, UserMixin,
     login_user, login_required,
@@ -262,6 +262,13 @@ def group_browser():
 @app.route('/')
 def index():
     return redirect(url_for('login'))
+
+
+@app.route('/get_all_groups')
+def get_all_groups():
+    groups = list(db.Groups.find())
+    print(groups)
+    return json_util.dumps(groups), 200, {'Content-Type': 'application/json'}
 
 
 if __name__ == "__main__":
