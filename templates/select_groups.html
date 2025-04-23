@@ -1,51 +1,53 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Select Interest Groups</title>
-    <link rel="stylesheet" type="text/css" href="../static/css/styles.css">
-  </head>
+{% extends "base.html" %}
 
-  <body>
-    <div class="group-container">
-      <h1>Select Your Interest Groups</h1>
-      <h4>Join groups to meet people with similar interests!</h4>
+{% block title %}
+Select Interest Groups
+{% endblock %}
 
-      <!-- Form to add new group -->
-      <form method="POST" action="{{ url_for('add_group') }}">
-        <div class="custom-group">
-          <label for="custom-group-input">Don't see your group? Add your own:</label>
-          <input type="text" id="custom-group-input" name="custom_group" placeholder="e.g., Chess Club" required>
-          <button type="submit" class="add-group-button">Add Group</button>
+{% block content %}
+<div class="group-container">
+  <h1>Select Your Interest Groups</h1>
+  <h4>Join groups to meet people with similar interests!</h4>
 
-          <!-- replace with flash eventually -->
-          {% if error %}
-            <div class="error-message">{{ error }}</div>
-          {% endif %}
-        </div>
-      </form>
+  <!-- Form to add new group -->
+  <form method="POST" action="{{ url_for('add_group') }}">
+    <div class="custom-group">
+      <label for="custom-group-input">Don't see your group? Add your own:</label>
+      <input type="text" id="custom-group-input" name="custom_group" placeholder="e.g., Chess Club" required>
+      <button type="submit" class="add-group-button">Add Group</button>
 
-      {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-          <div class="messages">
-            {% for category, message in messages %}
-              <p class="{{ category }}">{{ message }}</p>
-            {% endfor %}
-          </div>
-        {% endif %}
-      {% endwith %}
-
-      <!-- Form to select groups and submit -->
-      <form method="POST" action="{{ url_for('save_groups') }}">
-        <div class="group-options">
-          {% for group in groups %}
-            <label><input type="checkbox" name="groups" value="{{ group }}"> {{ group }}</label>
-          {% endfor %}
-        </div>
-
-        <button type="submit" class="submit-button">Join Selected Groups</button>
-      </form>
+      <!-- replace with flash eventually -->
+      {% if error %}
+        <div class="error-message">{{ error }}</div>
+      {% endif %}
     </div>
-  </body>
-</html>
+  </form>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="messages">
+        {% for category, message in messages %}
+          <p class="{{ category }}">{{ message }}</p>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <!-- Form to select groups and submit -->
+  <form method="POST" action="{{ url_for('save_groups') }}">
+    <div class="group-options">
+      {% for group in groups %}
+        <label>
+          <input 
+            {% if group['name'] in joined_groups %}checked{% endif %}
+            type="checkbox" name="groups" value="{{ group['name'] }}"
+          >
+          {{ group['name'] }}
+        </label>
+      {% endfor %}
+    </div>
+
+    <button type="submit" class="submit-button">Update Groups</button>
+  </form>
+</div>
+{% endblock %}

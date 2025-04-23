@@ -1,0 +1,54 @@
+document.addEventListener("DOMContentLoaded", async(event) => {
+    console.log("DOM fully loaded and parsed");
+
+    const search_bar = document.querySelector('.group-search')
+    search_bar.addEventListener('input', (event) => {
+        search_text = event.target.value.toLowerCase()
+        display_groups(search_text)
+    })
+});
+
+async function display_groups(text) {
+    const response = await fetch('get_all_groups')
+    if (!response.ok){
+        throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    const groups_data = await response.json()
+    const group_browser = document.querySelector('.group-browser')
+    while (group_browser.firstChild) {
+        group_browser.removeChild(group_browser.firstChild);
+    }
+
+    for (const group_data of groups_data) {
+        if (group_data['name'].toLowerCase().includes(text.toLowerCase())) {
+            create_group_div(group_data);
+        }
+    }
+}
+
+function create_group_div(data) {
+    const group_browser = document.querySelector('.group-browser')
+    const group = document.createElement('div')
+    const b = document.createElement('b')
+
+    group.className = 'group'
+
+    group_name = data['name']
+    group_members = data['members']
+    num_members = group_members.length
+
+    b.textContent = group_name
+
+    const members = document.createElement('span')
+    
+    if (num_members == 1) {
+        members.textContent = num_members + ' Member'
+    } else {
+        members.textContent = num_members + ' Members'
+    }
+
+    group.appendChild(b)
+    group.appendChild(members)
+    group_browser.appendChild(group)
+}
