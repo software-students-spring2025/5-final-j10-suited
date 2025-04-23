@@ -1,3 +1,7 @@
+* {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -7,6 +11,7 @@ body {
   justify-content: center;
   height: 800px;
 }
+
 h1 {
   font-size: 28px;
   margin-bottom: 10px;
@@ -98,6 +103,7 @@ h4 {
   border-radius: 8px;
   cursor: pointer;
   transition: background-color 0.3s ease;
+  margin-bottom: 10px;
 }
 
 .add-group-button:hover,
@@ -226,6 +232,7 @@ input[type="password"]:focus {
   display: flex;
   gap: 16px;
   margin-bottom: 20px;
+  width: 100%;
 }
 
 .name-input {
@@ -236,6 +243,7 @@ input[type="password"]:focus {
   border-radius: 8px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
   transition: border-color 0.2s, box-shadow 0.2s;
+  min-width: 0;
 }
 
 .name-input:focus {
@@ -273,4 +281,62 @@ input[type="password"]:focus {
   border-color: #57068c;
   box-shadow: 0 0 0 3px rgba(87, 6, 140, 0.15);
   outline: none;
+}
+
+.group-browser-container {
+  background-color: white;
+  padding: 40px;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 80%;
+}
+
+.group-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.group-header h1 {
+  margin-left: 0;
+  margin-top: 0;
+  margin-bottom: 0;
+  font-size: 2em;
+  margin-right: 30px;
+}
+
+.group-search {
+  margin-left: 10px;
+  border: 1px rgb(200, 200, 200) solid;
+  border-radius: 2em;
+  padding: 15px;
+  padding-left: 20px;
+  padding-right: 20px;
+  width: 300px;
+  font-size: 16px;
+}
+
+.group-browser {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 20px;
+}
+
+.group {
+  background-color: #e4dff7;
+  padding: 10px;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+  width: 150px;
+  height: 50px;
+}
+
+.group span {
+  color: grey;
+  font-size: 14px;
 }

@@ -1,20 +1,23 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Group Catalogue</title>
-    <link rel="stylesheet" type="text/css" href="../static/css/styles.css">
-  </head>
+{% extends "base.html" %}
 
-  <body>
-    <div class="group-browser">
-      <h1>Group Catalogue</h1>
-        <div class='profile-groups'>Groups:
-        {% for group in groups %}
-            <div>{{ group['name'] }}</div>
-        {% endfor %}
+{% block title %}
+Group Catalogue
+{% endblock %}
+
+{% block content %}
+<div class="group-browser-container">
+  <div class='group-header'>
+    <h1>Group Catalogue</h1>
+    <span>Search:</span><input class='group-search'>
+  </div>
+    <div class='group-browser'>
+    {% for group in groups %}
+        <div class='group'>
+          <b>{{ group['name'] }}</b>
+          <span>{{ group['members'] | length }} Member{% if group['members'] | length != 1%}s{% endif %}</span>
         </div>
+    {% endfor %}
     </div>
-  </body>
-</html>
+</div>
+<script src={{ url_for('static', filename='css/styles.css') }}></script>
+{% endblock %}

@@ -1,30 +1,28 @@
-<html>
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verify Email</title>
-    <link rel="stylesheet" href="../static/css/styles.css">
-  </head>
-  <body>
-    <div class="login-container">
-      <h1 class="app-title">Verify Your Email</h1>
-      <p>We've sent a code to <strong>{{ email }}</strong>. Enter it below to finish registration.</p>
-      <form method="POST">
-        <input 
-        type="text"
-        name="code"
-        placeholder="Enter 6-digit code"
-        class="verification-code-input"
-        inputmode="numeric"
-        pattern="\d{6}"
-        maxlength="6"
-        required
-        >
-        <button type="submit" class="nyu-login-button">Verify</button>
-      </form>
-      {% if error %}
-        <p class="error-message">{{ error }}</p>
-      {% endif %}
-    </div>
-  </body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}
+Verify Email
+{% endblock %}
+
+{% block content %}
+<div class="login-container">
+  <h1 class="app-title">Verify Your Email</h1>
+  <p>We've sent a code to <strong>{{ email }}</strong>. Enter it below to finish registration.</p>
+  <form method="POST">
+    <input 
+    type="text"
+    name="code"
+    placeholder="Enter 6-digit code"
+    class="verification-code-input"
+    inputmode="numeric"
+    pattern="\d{6}"
+    maxlength="6"
+    required
+    >
+    <button type="submit" class="nyu-login-button">Verify</button>
+  </form>
+  {% if error %}
+    <p class="error-message">{{ error }}</p>
+  {% endif %}
+</div>
+{% endblock %}

@@ -165,7 +165,7 @@ def login():
         user = User(data)
         login_user(user)
         flash('Logged in successfully.')
-        return redirect(url_for('home'))
+        return redirect(url_for('group_browser'))
 
     return render_template('login.html')
 
