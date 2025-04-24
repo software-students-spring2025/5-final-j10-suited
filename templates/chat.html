@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}
+Chat
+{% endblock %}
+
+{% block content %}
+<h2>Chat with {{ other_name }}</h2>
+<div id="messages" style="border:1px solid #ccc;height:300px;overflow:auto;">
+  {% for msg in history %}
+    <div>
+      {{ 'Me:' if msg.sender_id == current_user.id else other_name + ':' }} {{ msg.body }} <small>({{ msg.timestamp }})</small>
+    </div>
+  {% endfor %}
+</div>
+<input id="msg_input" placeholder="Type a message…" autocomplete="off"/><button id="send">Send</button>
+
+<script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
+<script>
+  const socket = io();
+  const userId = "{{ current_user.id }}";
+  const otherId = "{{ other_id }}";
+  const room = "{{ room }}";
+  socket.emit('join', { room });
+
+  socket.on('receive_message', data => {
+    const el = document.createElement('div');
+    const prefix = data.sender_id === userId ? 'Me:' : '{{ other_name }}:';
+    el.innerHTML = `${prefix} ${data.body} <small>(${data.timestamp})</small>`;
+    document.getElementById('messages').append(el);
+  });
+
+  document.getElementById('send').onclick = () => {
+    const body = document.getElementById('msg_input').value;
+    if (!body) return;
+    socket.emit('send_message', {
+      room,
+      sender_id: userId,
+      recipient_id: otherId,
+      body
+    });
+    document.getElementById('msg_input').value = '';
+  };
+</script>
+{% endblock %}
