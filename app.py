@@ -4,7 +4,6 @@ from datetime import timezone
 import datetime
 from dotenv import load_dotenv
 from bson import ObjectId, json_util
-from datetime import datetime
 import pymongo
 import certifi
 from flask import Flask, render_template, request, redirect, url_for, session, flash, abort, jsonify
@@ -359,7 +358,7 @@ def post_message(gid):
             'group_id': ObjectId(gid),
             'user_id': ObjectId(current_user.id),
             'content': content,
-            'timestamp': datetime.utcnow()
+            'timestamp': datetime.datetime.now(timezone.utc)
         })
     return redirect(url_for('group_detail', gid=gid))
 
