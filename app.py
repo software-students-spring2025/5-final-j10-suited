@@ -1,5 +1,7 @@
 import os
 import random
+from datetime import timezone
+import datetime
 from dotenv import load_dotenv
 from bson import ObjectId, json_util
 import pymongo
@@ -10,6 +12,7 @@ from flask_login import (
     login_user, login_required,
     logout_user, current_user
 )
+from flask_socketio import SocketIO, join_room, leave_room, emit
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_mail import Mail, Message
 
@@ -59,14 +62,71 @@ def load_user(user_id):
     data = db.Users.find_one({'_id': ObjectId(user_id)})
     return User(data) if data else None
 
+socketio = SocketIO(app)
 
-#temporary- just for making sure that db connection works
-@app.route('/test_db')
-def test_db():
-    user = db.Users.find_one({"name": "test"})
-    if not user:
-        return abort(404, "User not found")
-    return user["name"]
+@app.route('/chat/<other_id>')
+@login_required
+def chat(other_id):
+    # Determine room key (sorted pair of user IDs)
+    user_id = current_user.id
+    room = '_'.join(sorted([user_id, other_id]))
+    # Load other user's name and chat history
+    other = db.Users.find_one({'_id':ObjectId(other_id)})
+    raw_msgs = db.Messages.find({'room': room}).sort('timestamp', 1)
+    history = []
+    for m in raw_msgs:
+        history.append({
+            'sender_id': str(m['sender_id']),
+            'body': m['body'],
+            'timestamp': m['timestamp'].strftime('%Y-%m-%d %H:%M:%S')
+        })
+    return render_template('chat.html', other_id=other_id, other_name=other['first_name'], room=room, history=history)
+
+@socketio.on('join')
+def on_join(data):
+    join_room(data['room'])
+
+@socketio.on('leave')
+def on_leave(data):
+    leave_room(data['room'])
+
+@socketio.on('send_message')
+def handle_message(data):
+    sender = ObjectId(data['sender_id'])
+    recipient = ObjectId(data['recipient_id'])
+    body = data['body']
+    ts = datetime.utcnow()
+    room = data['room']
+    # Save to DB
+    db.Messages.insert_one({
+        'sender_id': sender,
+        'recipient_id': recipient,
+        'body': body,
+        'timestamp': ts,
+        'room': room
+    })
+    # Broadcast
+    emit('receive_message', {
+        'sender_id': data['sender_id'],
+        'body': body,
+        'timestamp': ts.strftime('%Y-%m-%d %H:%M:%S')
+    }, room=room)
+
+# User listing route
+@app.route('/users')
+@login_required
+def users_list():
+    raw = db.Users.find().sort([('first_name', 1), ('last_name', 1)])
+    users = []
+    for u in raw:
+        if  not str(u['_id']) == str(current_user.get_id()):
+            users.append({
+                'id': str(u['_id']),
+                'first_name': u.get('first_name'),
+                'last_name': u.get('last_name'),
+                'email': u.get('email')
+            })
+    return render_template('users.html', users=users)
 
 
 @app.route('/home')
@@ -272,4 +332,4 @@ def get_all_groups():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5001, debug=True)
+    socketio.run(app, host='0.0.0.0', port=5001, debug=True)
