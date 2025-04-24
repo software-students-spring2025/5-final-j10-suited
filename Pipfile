@@ -10,6 +10,7 @@ pymongo = "*"
 certifi = "*"
 flask-mail = "*"
 flask-login = "*"
+flask-socketio = "*"
 
 [dev-packages]
 
