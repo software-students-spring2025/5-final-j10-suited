@@ -95,7 +95,7 @@ def handle_message(data):
     sender = ObjectId(data['sender_id'])
     recipient = ObjectId(data['recipient_id'])
     body = data['body']
-    ts = datetime.utcnow()
+    ts = datetime.datetime.now(timezone.utc)
     room = data['room']
     # Save to DB
     db.Messages.insert_one({
