@@ -2,6 +2,7 @@ import os
 import random
 from dotenv import load_dotenv
 from bson import ObjectId, json_util
+from datetime import datetime
 import pymongo
 import certifi
 from flask import Flask, render_template, request, redirect, url_for, session, flash, abort, jsonify
@@ -263,6 +264,44 @@ def group_browser():
 def index():
     return redirect(url_for('login'))
 
+@app.route('/groups/<gid>')
+@login_required
+def group_detail(gid):
+    group = db.Groups.find_one({"_id": ObjectId(gid)})
+    if not group:
+        abort(404)
+    member_ids = group.get('members', [])
+    is_member = ObjectId(current_user.id) in member_ids
+    messages = list(db.Messages.find({"group_id": ObjectId(gid)}).sort("timestamp", 1))
+    for m in messages:
+        user = db.Users.find_one({"_id": m['user_id']})
+        m['username'] = user.get('first_name', 'Unknown')
+    return render_template('group_detail.html', group=group, messages=messages, is_member=is_member)
+
+@app.route('/groups/<gid>/join', methods=['POST'])
+@login_required
+def join_group(gid):
+    db.Groups.update_one({"_id": ObjectId(gid)}, {"$addToSet": {"members": ObjectId(current_user.id)}})
+    return redirect(url_for('group_detail', gid=gid))
+
+@app.route('/groups/<gid>/leave', methods=['POST'])
+@login_required
+def leave_group(gid):
+    db.Groups.update_one({"_id": ObjectId(gid)}, {"$pull": {"members": ObjectId(current_user.id)}})
+    return redirect(url_for('group_browser'))
+
+@app.route('/groups/<gid>/post', methods=['POST'])
+@login_required
+def post_message(gid):
+    content = request.form.get('content', '').strip()
+    if content:
+        db.Messages.insert_one({
+            'group_id': ObjectId(gid),
+            'user_id': ObjectId(current_user.id),
+            'content': content,
+            'timestamp': datetime.utcnow()
+        })
+    return redirect(url_for('group_detail', gid=gid))
 
 @app.route('/get_all_groups')
 def get_all_groups():

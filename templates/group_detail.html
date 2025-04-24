@@ -1,0 +1,37 @@
+h{% extends "base.html" %}
+
+{% block title %}{{ group['name'] }}{% endblock %}
+
+{% block content %}
+  <h1>{{ group['name'] }}</h1>
+
+  {% if is_member %}
+    <form method="POST" action="{{ url_for('leave_group', gid=group._id) }}">
+      <button>Leave Group</button>
+    </form>
+  {% else %}
+    <form method="POST" action="{{ url_for('join_group', gid=group._id) }}">
+      <button>Join Group</button>
+    </form>
+  {% endif %}
+
+  {% if is_member %}
+    <div id="chat">
+      <h2>Chat</h2>
+      <div class="messages">
+        {% for m in messages %}
+          <p>
+            <strong>{{ m.username }}:</strong> {{ m.content }}
+            <em>{{ m.timestamp.strftime('%Y-%m-%d %H:%M') }}</em>
+          </p>
+        {% endfor %}
+      </div>
+      <form method="POST" action="{{ url_for('post_message', gid=group._id) }}">
+        <input name="content" placeholder="Say something…" required>
+        <button>Send</button>
+      </form>
+    </div>
+  {% else %}
+    <p>You must join this group to view and post messages.</p>
+  {% endif %}
+{% endblock %}

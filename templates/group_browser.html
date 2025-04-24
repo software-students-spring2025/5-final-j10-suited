@@ -1,22 +1,24 @@
 {% extends "base.html" %}
 
-{% block title %}
-Group Catalogue
-{% endblock %}
+{% block title %}Group Catalogue{% endblock %}
 
 {% block content %}
 <div class="group-browser-container">
-  <div class='group-header'>
+  <div class="group-header">
     <h1>Group Catalogue</h1>
-    <span>Search:</span><input class='group-search'>
+    <span>Search:</span><input class="group-search">
   </div>
-    <div class='group-browser'>
+  <div class="group-browser">
     {% for group in groups %}
-        <div class='group'>
+      <div class="group">
+        <a href="{{ url_for('group_detail', gid=group._id) }}">
           <b>{{ group['name'] }}</b>
-          <span>{{ group['members'] | length }} Member{% if group['members'] | length != 1%}s{% endif %}</span>
-        </div>
+          <span>
+            {{ group['members']|length }} Member{% if group['members']|length != 1 %}s{% endif %}
+          </span>
+        </a>
+      </div>
     {% endfor %}
-    </div>
+  </div>
 </div>
 {% endblock %}
