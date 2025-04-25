@@ -12,8 +12,6 @@ flask-mail = "*"
 flask-login = "*"
 flask-socketio = "*"
 
-
-
 [dev-packages]
 
 [requires]
