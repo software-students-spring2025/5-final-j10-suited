@@ -326,16 +326,34 @@ def index():
 @app.route('/groups/<gid>')
 @login_required
 def group_detail(gid):
-    group = db.Groups.find_one({"_id": ObjectId(gid)})
+    group = db.Groups.find_one({'_id': ObjectId(gid)})
     if not group:
         abort(404)
     member_ids = group.get('members', [])
-    is_member = ObjectId(current_user.id) in member_ids
-    messages = list(db.Messages.find({"group_id": ObjectId(gid)}).sort("timestamp", 1))
-    for m in messages:
-        user = db.Users.find_one({"_id": m['user_id']})
-        m['username'] = user.get('first_name', 'Unknown')
-    return render_template('group_detail.html', group=group, messages=messages, is_member=is_member)
+    is_member  = ObjectId(current_user.id) in member_ids
+
+    history = []
+    for m in db.Messages.find({'group_id': ObjectId(gid)}).sort('timestamp', 1):
+        user = db.Users.find_one({'_id': m['user_id']})
+        history.append({
+            'sender_id': str(m['user_id']),
+            'username':  user.get('first_name', 'Unknown'),
+            'body':      m['content'],
+            'timestamp': m['timestamp'].strftime('%Y-%m-%d %H:%M:%S')
+        })
+
+    room = f"group_{gid}"
+    return render_template(
+      'group_detail.html',
+      group=group,
+      is_member=is_member,
+      room=room,
+      history=history,
+      gid=gid,
+      user_id=current_user.id,
+      username=current_user.first_name
+    )
+
 
 @app.route('/groups/<gid>/join', methods=['POST'])
 @login_required
@@ -361,6 +379,31 @@ def post_message(gid):
             'timestamp': datetime.datetime.now(timezone.utc)
         })
     return redirect(url_for('group_detail', gid=gid))
+from datetime import datetime, timezone
+
+@socketio.on('join_group')
+def on_join_group(data):
+    join_room(data['room'])
+
+@socketio.on('send_group_message')
+def handle_group_message(data):
+    ts = datetime.now(timezone.utc)
+    msg_doc = {
+        'group_id':   ObjectId(data['gid']),
+        'user_id':    ObjectId(data['sender_id']),
+        'content':    data['body'],
+        'timestamp':  ts,
+        'room':       data['room']
+    }
+    db.Messages.insert_one(msg_doc)
+
+    emit('new_group_message', {
+        'sender_id': data['sender_id'],
+        'username':  data['username'],
+        'body':      data['body'],
+        'timestamp': ts.strftime('%Y-%m-%d %H:%M:%S')
+    }, room=data['room'])
+
 
 @app.route('/get_all_groups')
 def get_all_groups():
