@@ -289,29 +289,51 @@ def save_groups():
     flash("Groups saved!", "success")
     return redirect(url_for("select_groups"))
 
+def get_user():
+        user = db.Users.find_one({"_id": ObjectId(current_user.get_id())})
+        gp_list = [db.Groups.find_one(ObjectId(gid))['name'] for gid in user['joined_groups']]
+        profile = {
+            'name': f"{user['first_name']} {user['last_name']}",
+            'groups': gp_list
+        }
+        try:
+            profile['age'] = user['age']
+        except:
+            profile['age'] = None
+        try:
+            profile['grade'] = user['grade']
+        except:
+            profile['grade'] = None
+        return profile
 
 @app.route("/profile")
 def profile():
     #registration does not ask for grade, major, age etc. 
     #should add "finish setting up profile" option here to add those things
-
-    # get mongodb user from user_id
-    # user = users_collection.find_one({"_id": session["user_id"]})
-    # profile = {
-    #     'name': user['name'],
-    #     'age': user['age'],
-    #     'grade': user['grade'],
-    #     'groups': user['groups']
-    # }
-    profile = {
-        'picture': 'example_image',
-        'name': "Jack",
-        'age': 21,
-        'grade': "Junior",
-        'groups': session.get('selected_groups', ['None joined yet'])
-    }
+    profile = get_user()
     return render_template("profile.html", profile=profile)
 
+@app.route("/set_age", methods=['POST'])
+def set_age():
+    age = request.form['age']
+    db.Users.update_one({"_id": ObjectId(current_user.get_id())}, {'$set': {'age': age}})
+    return redirect(url_for('profile'))
+
+@app.route("/reset_age")
+def reset_age():
+    db.Users.update_one({"_id": ObjectId(current_user.get_id())}, {'$set': {'age': None}})
+    return redirect(url_for('profile'))
+
+@app.route("/set_grade", methods=['POST'])
+def set_grade():
+    grade = request.form['grade']
+    db.Users.update_one({"_id": ObjectId(current_user.get_id())}, {'$set': {'grade': grade}})
+    return redirect(url_for('profile'))
+
+@app.route("/reset_grade")
+def reset_grade():
+    db.Users.update_one({"_id": ObjectId(current_user.get_id())}, {'$set': {'grade': None}})
+    return redirect(url_for('profile'))
 
 @app.route('/group_browser')
 def group_browser():
@@ -341,12 +363,14 @@ def group_detail(gid):
 @login_required
 def join_group(gid):
     db.Groups.update_one({"_id": ObjectId(gid)}, {"$addToSet": {"members": ObjectId(current_user.id)}})
+    db.Users.update_one({"_id": ObjectId(current_user.get_id())}, {"$addToSet": {"joined_groups": gid}})
     return redirect(url_for('group_detail', gid=gid))
 
 @app.route('/groups/<gid>/leave', methods=['POST'])
 @login_required
 def leave_group(gid):
     db.Groups.update_one({"_id": ObjectId(gid)}, {"$pull": {"members": ObjectId(current_user.id)}})
+    db.Users.update_one({"_id": ObjectId(current_user.get_id())}, {"$pull": {"joined_groups": gid}})
     return redirect(url_for('group_browser'))
 
 @app.route('/groups/<gid>/post', methods=['POST'])

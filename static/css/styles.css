@@ -339,3 +339,55 @@ input[type="password"]:focus {
   color: grey;
   font-size: 14px;
 }
+
+.prof_form {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 5px 0 10px; 
+  width: 100%;
+  max-width: 400px;
+}
+
+.prof_input {
+  flex: 1;
+  padding: 8px 10px;       
+  font-size: 14px;         
+  border: 1px solid #ccc;
+  border-radius: 6px;      
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.prof_button {
+  background-color: #57068c;
+  color: white;
+  border: none;
+  padding: 8px 12px;      
+  font-size: 14px;        
+  border-radius: 6px;      
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.prof_button:hover {
+  background-color: #3f056b;
+}
+
+.edit_button {
+  display: inline-block;
+  background-color: #57068c;    
+  max-width: 80px;
+  color: white;
+  border: none;
+  padding: 6px 10px;           
+  font-size: 14px;        
+  border-radius: 6px;    
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-left: 8px;          
+}
+
+.edit_button:hover {
+  background-color: #3f056b;    
+}
+

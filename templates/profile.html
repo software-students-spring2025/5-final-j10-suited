@@ -10,8 +10,40 @@ Profile
   <h1>Your Profile</h1>
     <div class='profile-picture'>{{ profile['picture'] }}</div>
     <div class='profile-name'>Name: {{ profile['name'] }}</div>
-    <div class='profile-age'>Age: {{ profile['age'] }}</div>
-    <div class='profile-grade'>Grade: {{ profile['grade'] }}</div>
+    {% if profile['age'] %}
+      <div class='profile-age'>Age: {{ profile['age'] }}  
+        <form action="{{ url_for('reset_age') }}" method="get" style="display:inline">
+        <button class="edit_button" type="submit">Edit</button>
+      </form></div> 
+    {% else %}
+    <form class="prof_form" method="POST" action="{{ url_for('set_age') }}">
+      <input
+        class="prof_input"
+        type="text"
+        name="age"
+        placeholder="Enter your age"
+        required
+      />
+      <button class="prof_button" type="submit">Save</button>
+    </form>    
+    {% endif %}
+    {% if profile['grade'] %}
+    <div class='profile-grade'>Grade: {{ profile['grade'] }}
+      <form action="{{ url_for('reset_grade') }}" method="get" style="display:inline">
+        <button class="edit_button" type="submit">Edit</button>
+      </form></div> 
+    {% else %}
+    <form class="prof_form" method="POST" action="{{ url_for('set_grade') }}">
+      <input
+        class="prof_input"
+        type="text"
+        name="grade"
+        placeholder="Enter your grade"
+        required
+      />
+      <button class="prof_button" type="submit">Save</button>
+    </form>    
+    {% endif %}
     <div class='profile-groups'>Groups:
     {% for group in profile['groups'] %}
         <span>{{ group }}</span>
