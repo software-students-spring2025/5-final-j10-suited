@@ -317,6 +317,100 @@ input[type="password"]:focus {
   font-size: 16px;
 }
 
+.sort {
+  position: relative;
+}
+
+.sort * {
+  box-sizing: border-box;
+}
+
+.sort-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px rgb(200, 200, 200) solid;
+  border-radius: 2em;
+  cursor: pointer;
+  transition: background 0.3s;
+  padding: 1em;
+  background: transparent;
+  border: none;
+  outline: none;
+  cursor: pointer;
+}
+
+.select-clicked {
+  box-shadow: 0 0 0.8em rgba(0, 0, 0, 0.2);
+}
+
+.sort-options:hover {
+  background: rgb(245, 245, 245);
+}
+
+.caret {
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid black;
+  transition: 0.3s;
+}
+
+.caret-rotate {
+  transform: rotate(180deg);
+}
+
+.menu {
+  list-style: none;
+  padding: 0.2em 0.5em;
+  background: rgb(250, 250, 250);
+  border: 1px rgb(200, 200, 200) solid;
+  box-shadow: 0 0.5em 1em rgba(0, 0, 0, 0.2);
+  border-radius: 1em;
+  color: rgb(150, 150, 150);
+  position: absolute;
+  top: 3em;
+  left: 50%;
+  width: 100%;
+  transform: translateX(-50%);
+  opacity: 0;
+  display: none;
+  transition: 0.2s;
+  z-index: 2;
+  max-height: 20em;
+  overflow-y: auto;
+  width: 100px;
+}
+
+.menu li {
+  padding: 0.7em 0.5em;
+  margin: 0.3em 0;
+  border-radius: 1em;
+  cursor: pointer;
+  color: rgb(100, 100, 100);
+}
+
+.menu li:hover {
+  background: rgb(237, 237, 237);
+}
+
+.menu-open {
+  display: block;
+  opacity: 1;
+}
+
+.click-off {
+  height: 100vh;
+  width: 100vw;
+  left: 0;
+  top: 0;
+  background: transparent;
+  position: fixed;
+  z-index: 1;
+  display: none;
+}
+
 .group-browser {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
@@ -325,14 +419,19 @@ input[type="password"]:focus {
 
 .group {
   background-color: #e4dff7;
-  padding: 10px;
   border-radius: 8px;
+  width: 150px;
+  height: 50px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   text-align: center;
-  width: 150px;
-  height: 50px;
+  padding: 10px;
+  text-decoration: none;
+}
+
+.group:hover {
+  background-color: #d0c5f1;
 }
 
 .group span {

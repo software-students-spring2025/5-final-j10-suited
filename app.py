@@ -109,7 +109,7 @@ def handle_message(data):
     emit('receive_message', {
         'sender_id': data['sender_id'],
         'body': body,
-        'timestamp': ts.strftime('%Y-%m-%d %H:%M:%S')
+        'timestamp': ts.astimezone().strftime('%Y-%m-%d %H:%M:%S')
     }, room=room)
 
 # User listing route
@@ -345,7 +345,7 @@ def group_browser():
 def index():
     return redirect(url_for('login'))
 
-@app.route('/groups/<gid>')
+@app.route('/group_detail/<gid>')
 @login_required
 def group_detail(gid):
     group = db.Groups.find_one({'_id': ObjectId(gid)})
@@ -424,14 +424,15 @@ def handle_group_message(data):
         'sender_id': data['sender_id'],
         'username':  data['username'],
         'body':      data['body'],
-        'timestamp': ts.strftime('%Y-%m-%d %H:%M:%S')
+        'timestamp': ts.astimezone().strftime('%Y-%m-%d %H:%M:%S')
     }, room=data['room'])
 
 
 @app.route('/get_all_groups')
 def get_all_groups():
     groups = list(db.Groups.find())
-    print(groups)
+    for group in groups:
+        group['_id'] = str(group['_id'])
     return json_util.dumps(groups), 200, {'Content-Type': 'application/json'}
 
 

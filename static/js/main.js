@@ -6,6 +6,21 @@ document.addEventListener("DOMContentLoaded", async(event) => {
         search_text = event.target.value.toLowerCase()
         display_groups(search_text)
     })
+
+    const sort_options = document.querySelector('.sort-options')
+    const menu = document.querySelector('.menu')
+    const click_off = document.querySelector('.click-off')
+    click_off.addEventListener('click', (event) => {
+        menu.style.display = "none";
+        menu.style.opacity = 0;
+        click_off.style.display = "none";
+    })
+    sort_options.addEventListener('click', (event) => {
+        menu.style.display = 'block';
+        menu.style.opacity = 1;
+        click_off.style.display = 'block';
+    })
+
 });
 
 async function display_groups(text) {
@@ -29,16 +44,17 @@ async function display_groups(text) {
 
 function create_group_div(data) {
     const group_browser = document.querySelector('.group-browser')
-    const group = document.createElement('div')
+    const group = document.createElement('a')
     const b = document.createElement('b')
 
+    const group_id = data['_id']
+    const group_name = data['name']
+    const group_members = data['members']
+    const num_members = group_members.length
+
     group.className = 'group'
-
-    group_name = data['name']
-    group_members = data['members']
-    num_members = group_members.length
-
-    b.textContent = group_name
+    group.href = `/group_detail/${group_id}`;
+    b.textContent = group_name;
 
     const members = document.createElement('span')
     
@@ -48,7 +64,7 @@ function create_group_div(data) {
         members.textContent = num_members + ' Members'
     }
 
-    group.appendChild(b)
-    group.appendChild(members)
-    group_browser.appendChild(group)
+    group.appendChild(b);
+    group.appendChild(members);
+    group_browser.appendChild(group);
 }
