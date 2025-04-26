@@ -430,9 +430,14 @@ def handle_group_message(data):
 
 @app.route('/get_all_groups')
 def get_all_groups():
+    sort = request.args.get('sort', 'oldest')
     groups = list(db.Groups.find())
     for group in groups:
         group['_id'] = str(group['_id'])
+    if sort == 'newest':
+        groups.reverse()
+    elif sort == 'members':
+        groups = sorted(groups, key=lambda x: len(x["members"]), reverse=True)
     return json_util.dumps(groups), 200, {'Content-Type': 'application/json'}
 
 
