@@ -403,7 +403,6 @@ def post_message(gid):
             'timestamp': datetime.datetime.now(timezone.utc)
         })
     return redirect(url_for('group_detail', gid=gid))
-from datetime import datetime, timezone
 
 @socketio.on('join_group')
 def on_join_group(data):
@@ -411,7 +410,7 @@ def on_join_group(data):
 
 @socketio.on('send_group_message')
 def handle_group_message(data):
-    ts = datetime.now(timezone.utc)
+    ts = datetime.datetime.now(timezone.utc)
     msg_doc = {
         'group_id':   ObjectId(data['gid']),
         'user_id':    ObjectId(data['sender_id']),
