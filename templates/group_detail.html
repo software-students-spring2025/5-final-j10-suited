@@ -1,37 +1,91 @@
 {% extends "base.html" %}
-
-{% block title %}{{ group['name'] }}{% endblock %}
+{% block title %}{{ group.name }}{% endblock %}
 
 {% block content %}
-  <h1>{{ group['name'] }}</h1>
+<div class="chat-page">
+  <div class="card">
 
-  {% if is_member %}
-    <form method="POST" action="{{ url_for('leave_group', gid=group._id) }}">
-      <button>Leave Group</button>
-    </form>
-  {% else %}
-    <form method="POST" action="{{ url_for('join_group', gid=group._id) }}">
-      <button>Join Group</button>
-    </form>
-  {% endif %}
-
-  {% if is_member %}
-    <div id="chat">
-      <h2>Chat</h2>
-      <div class="messages">
-        {% for m in messages %}
-          <p>
-            <strong>{{ m.username }}:</strong> {{ m.content }}
-            <em>{{ m.timestamp.strftime('%Y-%m-%d %H:%M') }}</em>
-          </p>
-        {% endfor %}
+    <!-- HEADER -->
+    <div class="chat-header">
+      <a href="{{ url_for('group_browser') }}" class="back-link">&larr; All Groups</a>
+      <div class="header-center">
+        <h1 class="group-title">{{ group.name }}</h1>
+        {% if is_member %}
+          <form method="POST" action="{{ url_for('leave_group', gid=gid) }}">
+            <button type="submit" class="btn-leave">Leave</button>
+          </form>
+        {% else %}
+          <form method="POST" action="{{ url_for('join_group', gid=gid) }}">
+            <button type="submit" class="btn-join">Join</button>
+          </form>
+        {% endif %}
       </div>
-      <form method="POST" action="{{ url_for('post_message', gid=group._id) }}">
-        <input name="content" placeholder="Say something…" required>
-        <button>Send</button>
-      </form>
     </div>
-  {% else %}
-    <p>You must join this group to view and post messages.</p>
-  {% endif %}
+
+    <!-- CHAT OR NOTICE -->
+    {% if is_member %}
+      <div id="chat-container" class="chat-container"></div>
+
+      <!-- INPUT FORM -->
+      <form id="chat-form" class="chat-form">
+        <input id="msg-input" autocomplete="off" placeholder="Say something…" />
+        <button type="submit">Send</button>
+      </form>
+    {% else %}
+      <p class="notice">You must join this group to view &amp; post messages.</p>
+    {% endif %}
+
+  </div>
+</div>
+
+<!-- SOCKET.IO + APP SCRIPT -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.0/socket.io.min.js"></script>
+<script>
+  const socket   = io();
+  const room     = "{{ room }}";
+  const gid      = "{{ gid }}";
+  const userId   = "{{ user_id }}";
+  const username = "{{ username }}";
+
+  const container = document.getElementById('chat-container');
+  function appendMessage(msg, isYou) {
+    const el = document.createElement('div');
+    el.classList.add('message', isYou ? 'you' : 'other');
+    el.innerHTML = `
+      <div class="bubble">${msg.body}</div>
+      <div class="meta">
+        <span>${isYou ? 'You' : msg.username}</span>
+        <span>${msg.timestamp}</span>
+      </div>`;
+    container.append(el);
+    container.scrollTop = container.scrollHeight;
+  }
+
+  // JOIN room & load initial history
+  socket.emit('join_group', { room });
+  const chatHistory = JSON.parse(`{{ history|tojson|safe }}`);
+  chatHistory.forEach(m => appendMessage(m, m.sender_id === userId));
+
+  // listen for new messages
+  socket.on('new_group_message', m => {
+    appendMessage(m, m.sender_id === userId);
+  });
+
+  // send new messages
+  document.getElementById('chat-form')
+    .addEventListener('submit', e => {
+      e.preventDefault();
+      const input = document.getElementById('msg-input');
+      const body  = input.value.trim();
+      if (!body) return;
+      socket.emit('send_group_message', {
+        gid,
+        room,
+        sender_id: userId,
+        username,
+        body
+      });
+      input.value = '';
+    });
+</script>
 {% endblock %}

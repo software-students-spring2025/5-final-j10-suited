@@ -5,10 +5,10 @@ Users
 {% endblock %}
 
 {% block content %}
-<h1 class="login-heading">All Users</h2>
+<h1 class="User Heading">All Users</h2>
     <ul>
       {% for u in users %}
-        <li style="display:flex; justify-content:space-between; width:400px;">
+        <li name="user">
           <span>{{ u.first_name }} {{ u.last_name }} ({{ u.email }})</span>
           <a href="{{ url_for('chat', other_id=u.id, other_name=u.first_name) }}">Message</a>
         </li>

@@ -1,25 +1,49 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}App{% endblock %}</title>
-    <link rel="stylesheet" type="text/css" href="../static/css/styles.css">
-  </head>
-  <body>
-    <main>
-        {% with messages = get_flashed_messages(with_categories=true) %}
-          {% if messages %}
-            <div class="messages">
-              {% for category, message in messages %}
-                <p class="{{ category }}">{{ message }}</p>
-              {% endfor %}
-            </div>
-          {% endif %}
-        {% endwith %}
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}App{% endblock %}</title>
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+
+<body>
+
+  <div style="position: relative;">
+
+    <input type="checkbox" id="menu-toggle">
     
-        {% block content %}{% endblock %}
-    </main>
+    <label for="menu-toggle" id="menu-button">
+      ☰
+    </label>
+
+    <div id="sidebar-menu">
+      <a href="{{ url_for('home') }}" style="margin-bottom: 20px; color: #57068c; text-decoration: none; font-size: 18px;">Home</a>
+      <a href="{{ url_for('profile') }}" style="margin-bottom: 20px; color: #57068c; text-decoration: none; font-size: 18px;">Profile</a>
+      <a href="{{ url_for('users_list') }}" style="margin-bottom: 20px; color: #57068c; text-decoration: none; font-size: 18px;">View Users</a>
+      <a href="{{ url_for('group_browser') }}" style="margin-bottom: 20px; color: #57068c; text-decoration: none; font-size: 18px;">Group Browser</a>
+      <a href="{{ url_for('select_groups') }}" style="margin-bottom: 20px; color: #57068c; text-decoration: none; font-size: 18px;">Join a Group</a>
+      <a href="{{ url_for('public_board') }}" style="margin-bottom: 20px; color: #57068c; text-decoration: none; font-size: 18px;">Public Board</a>
+    </div>
+
+  </div>
+
+  <main style="padding-top: 100px;">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="messages">
+          {% for category, message in messages %}
+            <p class="{{ category }}">{{ message }}</p>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}
+    {% endblock %}
+  </main>
     <script src={{ url_for('static', filename='js/main.js') }}></script>
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
   </body>
 </html>

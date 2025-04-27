@@ -109,7 +109,7 @@ def handle_message(data):
     emit('receive_message', {
         'sender_id': data['sender_id'],
         'body': body,
-        'timestamp': ts.strftime('%Y-%m-%d %H:%M:%S')
+        'timestamp': ts.astimezone().strftime('%Y-%m-%d %H:%M:%S')
     }, room=room)
 
 # User listing route
@@ -289,29 +289,51 @@ def save_groups():
     flash("Groups saved!", "success")
     return redirect(url_for("select_groups"))
 
+def get_user():
+        user = db.Users.find_one({"_id": ObjectId(current_user.get_id())})
+        gp_list = [db.Groups.find_one(ObjectId(gid))['name'] for gid in user['joined_groups']]
+        profile = {
+            'name': f"{user['first_name']} {user['last_name']}",
+            'groups': gp_list
+        }
+        try:
+            profile['age'] = user['age']
+        except:
+            profile['age'] = None
+        try:
+            profile['grade'] = user['grade']
+        except:
+            profile['grade'] = None
+        return profile
 
 @app.route("/profile")
 def profile():
     #registration does not ask for grade, major, age etc. 
     #should add "finish setting up profile" option here to add those things
-
-    # get mongodb user from user_id
-    # user = users_collection.find_one({"_id": session["user_id"]})
-    # profile = {
-    #     'name': user['name'],
-    #     'age': user['age'],
-    #     'grade': user['grade'],
-    #     'groups': user['groups']
-    # }
-    profile = {
-        'picture': 'example_image',
-        'name': "Jack",
-        'age': 21,
-        'grade': "Junior",
-        'groups': session.get('selected_groups', ['None joined yet'])
-    }
+    profile = get_user()
     return render_template("profile.html", profile=profile)
 
+@app.route("/set_age", methods=['POST'])
+def set_age():
+    age = request.form['age']
+    db.Users.update_one({"_id": ObjectId(current_user.get_id())}, {'$set': {'age': age}})
+    return redirect(url_for('profile'))
+
+@app.route("/reset_age")
+def reset_age():
+    db.Users.update_one({"_id": ObjectId(current_user.get_id())}, {'$set': {'age': None}})
+    return redirect(url_for('profile'))
+
+@app.route("/set_grade", methods=['POST'])
+def set_grade():
+    grade = request.form['grade']
+    db.Users.update_one({"_id": ObjectId(current_user.get_id())}, {'$set': {'grade': grade}})
+    return redirect(url_for('profile'))
+
+@app.route("/reset_grade")
+def reset_grade():
+    db.Users.update_one({"_id": ObjectId(current_user.get_id())}, {'$set': {'grade': None}})
+    return redirect(url_for('profile'))
 
 @app.route('/group_browser')
 def group_browser():
@@ -321,32 +343,52 @@ def group_browser():
 
 @app.route('/')
 def index():
-    return redirect(url_for('login'))
+    return redirect(url_for('register'))
 
-@app.route('/groups/<gid>')
+@app.route('/group_detail/<gid>')
 @login_required
 def group_detail(gid):
-    group = db.Groups.find_one({"_id": ObjectId(gid)})
+    group = db.Groups.find_one({'_id': ObjectId(gid)})
     if not group:
         abort(404)
     member_ids = group.get('members', [])
-    is_member = ObjectId(current_user.id) in member_ids
-    messages = list(db.Messages.find({"group_id": ObjectId(gid)}).sort("timestamp", 1))
-    for m in messages:
-        user = db.Users.find_one({"_id": m['user_id']})
-        m['username'] = user.get('first_name', 'Unknown')
-    return render_template('group_detail.html', group=group, messages=messages, is_member=is_member)
+    is_member  = ObjectId(current_user.id) in member_ids
+
+    history = []
+    for m in db.Messages.find({'group_id': ObjectId(gid)}).sort('timestamp', 1):
+        user = db.Users.find_one({'_id': m['user_id']})
+        history.append({
+            'sender_id': str(m['user_id']),
+            'username':  user.get('first_name', 'Unknown'),
+            'body':      m['content'],
+            'timestamp': m['timestamp'].strftime('%Y-%m-%d %H:%M:%S')
+        })
+
+    room = f"group_{gid}"
+    return render_template(
+      'group_detail.html',
+      group=group,
+      is_member=is_member,
+      room=room,
+      history=history,
+      gid=gid,
+      user_id=current_user.id,
+      username=current_user.first_name
+    )
+
 
 @app.route('/groups/<gid>/join', methods=['POST'])
 @login_required
 def join_group(gid):
     db.Groups.update_one({"_id": ObjectId(gid)}, {"$addToSet": {"members": ObjectId(current_user.id)}})
+    db.Users.update_one({"_id": ObjectId(current_user.get_id())}, {"$addToSet": {"joined_groups": gid}})
     return redirect(url_for('group_detail', gid=gid))
 
 @app.route('/groups/<gid>/leave', methods=['POST'])
 @login_required
 def leave_group(gid):
     db.Groups.update_one({"_id": ObjectId(gid)}, {"$pull": {"members": ObjectId(current_user.id)}})
+    db.Users.update_one({"_id": ObjectId(current_user.get_id())}, {"$pull": {"joined_groups": gid}})
     return redirect(url_for('group_browser'))
 
 @app.route('/groups/<gid>/post', methods=['POST'])
@@ -362,12 +404,69 @@ def post_message(gid):
         })
     return redirect(url_for('group_detail', gid=gid))
 
+@socketio.on('join_group')
+def on_join_group(data):
+    join_room(data['room'])
+
+@socketio.on('send_group_message')
+def handle_group_message(data):
+    ts = datetime.datetime.now(timezone.utc)
+    msg_doc = {
+        'group_id':   ObjectId(data['gid']),
+        'user_id':    ObjectId(data['sender_id']),
+        'content':    data['body'],
+        'timestamp':  ts,
+        'room':       data['room']
+    }
+    db.Messages.insert_one(msg_doc)
+
+    emit('new_group_message', {
+        'sender_id': data['sender_id'],
+        'username':  data['username'],
+        'body':      data['body'],
+        'timestamp': ts.astimezone().strftime('%Y-%m-%d %H:%M:%S')
+    }, room=data['room'])
+
+
 @app.route('/get_all_groups')
 def get_all_groups():
+    sort = request.args.get('sort', 'oldest')
     groups = list(db.Groups.find())
-    print(groups)
+    for group in groups:
+        group['_id'] = str(group['_id'])
+    if sort == 'newest':
+        groups.reverse()
+    elif sort == 'members':
+        groups = sorted(groups, key=lambda x: len(x["members"]), reverse=True)
+    elif sort == 'alphabetical':
+        groups = sorted(groups, key=lambda x: x["name"])
     return json_util.dumps(groups), 200, {'Content-Type': 'application/json'}
 
+@app.route('/public_board')
+def public_board():
+    posts = db.PublicPosts.find().sort('timestamp', -1) 
+    return render_template('public_board.html', posts=posts)
+
+@app.route('/add_post', methods=['POST'])
+def add_post():
+    username = current_user.first_name  
+    text = request.form.get('text')
+    file = request.files.get('file')
+
+    filename = None
+    if file:
+        filename = file.filename
+        file.save(os.path.join('static/uploads', filename))
+
+    db.PublicPosts.insert_one({
+        'username': username,
+        'text': text,
+        'timestamp': datetime.datetime.now(),
+        'filename': filename
+    })
+
+    return redirect(url_for('public_board'))
 
 if __name__ == "__main__":
     socketio.run(app, host='0.0.0.0', port=5001, debug=True)
+

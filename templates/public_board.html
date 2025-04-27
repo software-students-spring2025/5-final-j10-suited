@@ -1,51 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Public Board{% endblock %}
+{% block content %}
 
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Public Board</title>
-    <link rel="stylesheet" type="text/css" href="../static/css/styles.css">
-  </head>
-<body>
-    <div style="display: flex; flex-direction: column; align-items: center; padding: 40px;">
-  
+<div style="padding-top: 100px; display: flex; flex-direction: column; align-items: center; padding: 40px; width: 100%;">
+
+  <div style="background-color: white; padding: 30px; border-radius: 16px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1); width: 100%; max-width: 500px;">
+    <form action="{{ url_for('add_post') }}" method="post" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 16px;">
       
-  
-      <hr style="margin: 40px 0; width: 100%; max-width: 600px;">
-  
-      <h2>Public Posts</h2>
-      {% for post in posts %}
-        <div class="post">
-          <strong>{{ post.username }}</strong> <em>{{ post.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</em>
-          <p>{{ post.text }}</p>
-  
-          {% if post.filename %}
-            {% if post.filename.endswith(('jpg', 'jpeg', 'png', 'gif')) %}
-              <img src="{{ url_for('static', filename='uploads/' + post.filename) }}">
-            {% elif post.filename.endswith('mp4') %}
-              <video controls>
-                <source src="{{ url_for('static', filename='uploads/' + post.filename) }}" type="video/mp4">
-              </video>
-            {% else %}
-              <a href="{{ url_for('static', filename='uploads/' + post.filename) }}">Download {{ post.filename }}</a>
-            {% endif %}
-          {% endif %}
-        </div>
-      {% endfor %}
-        
-      <h2>Post Something</h2>
-      <div class="post-form">
-        <form method="POST" action="{{ url_for('post') }}" enctype="multipart/form-data">
-          <textarea name="text" placeholder="Create your post!" rows="3"></textarea><br>
-          <div class="file-upload-wrapper">
-            <label class="file-upload-button">Choose File
-              <input type="file" name="media">
-            </label>
-          </div>                   
-        <button type="submit">Post</button>
-        </form>
+      <textarea 
+        name="text" 
+        placeholder="Share your post with everyone..." 
+        required
+        style="
+          width: 100%;
+          min-height: 120px;
+          padding: 14px 16px;
+          font-size: 16px;
+          border: 1px solid #ccc;
+          border-radius: 8px;
+          resize: vertical;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+          transition: border-color 0.3s, box-shadow 0.3s;
+        "
+        onfocus="this.style.borderColor='#57068c'; this.style.boxShadow='0 0 0 3px rgba(87, 6, 140, 0.15)';"
+        onblur="this.style.borderColor='#ccc'; this.style.boxShadow='0 2px 6px rgba(0,0,0,0.05)';"
+      >{{ request.form.get('text', '') }}</textarea>
+
+      <div style="position: relative;">
+        <label for="file-upload" 
+          style="background-color: #57068c; color: white; padding: 10px 15px; border-radius: 8px; cursor: pointer; font-size: 16px; transition: background-color 0.3s ease;"
+          onmouseover="this.style.backgroundColor='#3f056b'" 
+          onmouseout="this.style.backgroundColor='#57068c'">
+          Upload Photo/Video
+        </label>
+        <input 
+          id="file-upload" 
+          name="file" 
+          type="file" 
+          style="opacity: 0; position: absolute; left: 0; top: 0; height: 100%; width: 100%; cursor: pointer;">
       </div>
-    </div>
-  </body>
-  
+
+      <button type="submit" class="submit-button">Post</button>
+
+    </form>
+  </div>
+
+  <hr style="margin: 40px 0; width: 100%; max-width: 500px;">
+
+  <h2 style="color: #57068c;">Public Posts</h2>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 20px; width: 100%; max-width: 800px;">
+    {% for post in posts %}
+      <div class="group" 
+        style="background-color: #e4dff7; border-radius: 8px; width: 150px; height: auto; min-height: 100px; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 10px; text-decoration: none; text-align: center;">
+        
+        <strong style="font-size: 16px; color: #333;">{{ post.username }}</strong>
+        <em style="font-size: 12px; color: grey;">{{ post.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</em>
+
+        <p style="font-size: 14px; margin-top: 8px;">{{ post.text }}</p>
+
+        {% if post.filename %}
+          {% if post.filename.endswith(('jpg', 'jpeg', 'png', 'gif')) %}
+            <img src="{{ url_for('static', filename='uploads/' + post.filename) }}" 
+              style="margin-top: 8px; max-width: 100%; max-height: 100px; object-fit: cover; border-radius: 8px;">
+          {% elif post.filename.endswith('mp4') %}
+            <video controls 
+              style="margin-top: 8px; max-width: 100%; max-height: 100px; border-radius: 8px;">
+              <source src="{{ url_for('static', filename='uploads/' + post.filename) }}" type="video/mp4">
+            </video>
+          {% else %}
+            <a href="{{ url_for('static', filename='uploads/' + post.filename) }}" style="color: #57068c; font-size: 12px;">Download</a>
+          {% endif %}
+        {% endif %}
+
+      </div>
+    {% endfor %}
+  </div>
+
+</div>
+
+{% endblock %}
