@@ -351,7 +351,7 @@ def group_browser():
 
 @app.route('/')
 def index():
-    return redirect(url_for('home'))
+    return redirect(url_for('login'))
 
 @app.route('/group_detail/<gid>')
 @login_required
