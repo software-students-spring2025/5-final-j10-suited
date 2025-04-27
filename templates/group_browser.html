@@ -7,17 +7,27 @@
   <div class="group-header">
     <h1>Group Catalogue</h1>
     <span>Search:</span><input class="group-search">
+    <div class="sort">
+      <div class="sort-options">
+        <ion-icon name="filter"></ion-icon>
+      </div>
+      <div class="click-off"></div>
+      <ul class="menu">
+        <li data-sort="oldest">Oldest</li>
+        <li data-sort="newest">Newest</li>
+        <li data-sort="members">Members</li>
+        <li data-sort="alphabetical">A-Z</li>
+      </ul>
+    </div>
   </div>
   <div class="group-browser">
     {% for group in groups %}
-      <div class="group">
-        <a href="{{ url_for('group_detail', gid=group._id) }}">
+        <a class = "group" href="{{ url_for('group_detail', gid=group._id) }}">
           <b>{{ group['name'] }}</b>
           <span>
             {{ group['members']|length }} Member{% if group['members']|length != 1 %}s{% endif %}
           </span>
         </a>
-      </div>
     {% endfor %}
   </div>
 </div>
