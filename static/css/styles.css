@@ -706,4 +706,51 @@ li[name="user"] a:hover {
   background-color: #3f056b;
 }
 
+input[type="file"] {
+  background-color: #57068c;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  font-size: 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-top: 10px;
+}
 
+input[type="file"]:hover {
+  background-color: #3f056b;
+}
+
+#menu-toggle {
+      display: none;
+    }
+    #sidebar-menu {
+      position: fixed;
+      top: 0;
+      left: -250px;
+      height: 100%;
+      width: 250px;
+      background: white;
+      box-shadow: 2px 0 12px rgba(0,0,0,0.2);
+      padding: 100px 20px 20px 20px;
+      transition: left 0.3s ease;
+      z-index: 999;
+      display: flex;
+      flex-direction: column;
+    }
+    #menu-toggle:checked ~ #sidebar-menu {
+      left: 0;
+    }
+    #menu-button {
+      background-color: #57068c;
+      color: white;
+      padding: 12px 20px;
+      font-size: 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      z-index: 1000;
+    }

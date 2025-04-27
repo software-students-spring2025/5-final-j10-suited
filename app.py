@@ -343,7 +343,7 @@ def group_browser():
 
 @app.route('/')
 def index():
-    return redirect(url_for('login'))
+    return redirect(url_for('register'))
 
 @app.route('/group_detail/<gid>')
 @login_required
@@ -442,6 +442,31 @@ def get_all_groups():
         groups = sorted(groups, key=lambda x: x["name"])
     return json_util.dumps(groups), 200, {'Content-Type': 'application/json'}
 
+@app.route('/public_board')
+def public_board():
+    posts = db.PublicPosts.find().sort('timestamp', -1) 
+    return render_template('public_board.html', posts=posts)
+
+@app.route('/add_post', methods=['POST'])
+def add_post():
+    username = current_user.first_name  
+    text = request.form.get('text')
+    file = request.files.get('file')
+
+    filename = None
+    if file:
+        filename = file.filename
+        file.save(os.path.join('static/uploads', filename))
+
+    db.PublicPosts.insert_one({
+        'username': username,
+        'text': text,
+        'timestamp': datetime.datetime.now(),
+        'filename': filename
+    })
+
+    return redirect(url_for('public_board'))
 
 if __name__ == "__main__":
     socketio.run(app, host='0.0.0.0', port=5001, debug=True)
+
