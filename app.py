@@ -226,9 +226,14 @@ def login():
         login_user(user)
         flash('Logged in successfully.')
         return redirect(url_for('group_browser'))
+    else:
+        return render_template('login.html')
 
-    return render_template('login.html')
-
+@app.route("/logout", methods=["POST"])
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for("home"))
 
 #select groups html page
 @app.route("/select_groups", methods=["GET"])
@@ -343,7 +348,7 @@ def group_browser():
 
 @app.route('/')
 def index():
-    return redirect(url_for('register'))
+    return redirect(url_for('home'))
 
 @app.route('/group_detail/<gid>')
 @login_required

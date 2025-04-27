@@ -6,11 +6,16 @@ Home
 
 {% block content %}
   <div class="login-container">
-    <h1 class="app-title">Welcome</h1>
+    <h1 class="app-title">Welcome to ConnectNYU!</h1>
     {% if current_user.is_authenticated %}
         <h2 class="login-heading">Logged in as: {{ current_user.email }}</h2>
+        <form method="POST" action="{{ url_for('logout') }}" style="display:inline">
+            <button type="submit" class="nyu-login-button">Logout</button>
+        </form>          
     {% else %}
         <h2 class="login-heading">You are not logged in.</h2>
+        <a href="{{ url_for('login') }}" class="nyu-login-button">Login</a>
+        <a href="{{ url_for('register') }}" class="nyu-login-button">Register</a>
     {% endif %}
   </div> 
 {% endblock %}
