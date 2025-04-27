@@ -241,8 +241,10 @@ def select_groups():
     groups = db.Groups.find({})
     user = db.Users.find_one({'_id': ObjectId(current_user.id)})
     print('joined_groups:', user['joined_groups'])
-    joined_groups = user['joined_groups']
-    return render_template("select_groups.html", groups=groups, joined_groups=joined_groups, error=None)
+    group_ids = user['joined_groups']
+    group_dbs = db.Groups.find({'_id': {'$in': group_ids}}, {'name': 1})
+    group_names = [group['name'] for group in group_dbs]
+    return render_template("select_groups.html", groups=groups, joined_groups=group_names, error=None)
 
 
 @app.route("/add_group", methods=["POST"])
@@ -268,31 +270,37 @@ def add_group():
 
 @app.route("/save_groups", methods=["POST"])
 def save_groups():
-    selected_groups = request.form.getlist("groups")
+    selected_group_names = request.form.getlist("groups")
     user_id = ObjectId(current_user.id)
 
     user = db.Users.find_one({'_id': user_id})
-    old_groups = user.get('joined_groups', [])
+    old_group_ids = user.get('joined_groups', [])
+    selected_group_ids = []
+
+    for group_name in selected_group_names:
+        group = db.Groups.find_one({'name': group_name}, {'_id': 1})
+        if group:
+            selected_group_ids.append(group['_id'])
+            db.Groups.update_one(
+                {'_id': group['_id']},
+                {'$addToSet': {'members': user_id}}
+            )
+
+    unchecked_group_ids = set(old_group_ids) - set(selected_group_ids)
+    for gid in unchecked_group_ids:
+        db.Groups.update_one(
+            {'_id': gid},
+            {'$pull': {'members': user_id}}
+        )
 
     db.Users.update_one(
         {'_id': user_id},
-        {'$set': {'joined_groups': selected_groups}},
+        {'$set': {'joined_groups': selected_group_ids}}
     )
 
-    for group_name in selected_groups:
-        db.Groups.update_one(
-            {'name': group_name},
-            {'$addToSet': {'members': user_id}}
-        )
-
-    unchecked_groups = set(old_groups) - set(selected_groups)
-    for group_name in unchecked_groups:
-        db.Groups.update_one(
-            {'name': group_name},
-            {'$pull': {'members': user_id}}
-        )
     flash("Groups saved!", "success")
     return redirect(url_for("select_groups"))
+
 
 def get_user():
         user = db.Users.find_one({"_id": ObjectId(current_user.get_id())})
@@ -349,6 +357,7 @@ def group_browser():
 @app.route('/')
 def index():
     return redirect(url_for('home'))
+
 
 @app.route('/group_detail/<gid>')
 @login_required
