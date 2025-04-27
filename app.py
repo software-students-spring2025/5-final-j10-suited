@@ -343,7 +343,7 @@ def group_browser():
 
 @app.route('/')
 def index():
-    return redirect(url_for('login'))
+    return redirect(url_for('register'))
 
 @app.route('/group_detail/<gid>')
 @login_required
@@ -442,10 +442,6 @@ def get_all_groups():
         groups = sorted(groups, key=lambda x: x["name"])
     return json_util.dumps(groups), 200, {'Content-Type': 'application/json'}
 
-
-if __name__ == "__main__":
-    socketio.run(app, host='0.0.0.0', port=5001, debug=True)
-
 @app.route('/public_board')
 def public_board():
     posts = db.PublicPosts.find().sort('timestamp', -1) 
@@ -470,3 +466,7 @@ def add_post():
     })
 
     return redirect(url_for('public_board'))
+
+if __name__ == "__main__":
+    socketio.run(app, host='0.0.0.0', port=5001, debug=True)
+

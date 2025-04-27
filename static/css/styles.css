@@ -706,4 +706,19 @@ li[name="user"] a:hover {
   background-color: #3f056b;
 }
 
+input[type="file"] {
+  background-color: #57068c;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  font-size: 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-top: 10px;
+}
+
+input[type="file"]:hover {
+  background-color: #3f056b;
+}
 
