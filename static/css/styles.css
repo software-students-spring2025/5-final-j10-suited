@@ -9,7 +9,6 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 800px;
 }
 
 h1 {
@@ -30,6 +29,12 @@ h4 {
   text-align: center;
   width: 100%;
   max-width: 500px;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  overflow-y: auto;
+  max-height: 90vh;
 }
 
 .group-container h1 {
@@ -119,6 +124,10 @@ h4 {
   text-align: center;
   width: 100%;
   max-width: 400px;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
 }
 
 .app-title {
@@ -162,6 +171,10 @@ h4 {
   max-width: 500px;
   display: flex;
   flex-direction: column;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
 }
 
 .messages {
@@ -288,7 +301,12 @@ input[type="password"]:focus {
   padding: 40px;
   border-radius: 16px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-  width: 100%;
+  width: 80%;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  max-height: 90vh;
 }
 
 .group-header {
@@ -313,8 +331,15 @@ input[type="password"]:focus {
   padding: 15px;
   padding-left: 20px;
   padding-right: 20px;
-  width: 300px;
+  width: 40%;
+  min-width: 300px;
   font-size: 16px;
+}
+
+.group-search:focus {
+  border-color: #8e44ad;
+  box-shadow: 0 0 8px rgba(142, 68, 173, 0.2);
+  outline: none;
 }
 
 .sort {
@@ -332,33 +357,10 @@ input[type="password"]:focus {
   border: 1px rgb(200, 200, 200) solid;
   border-radius: 2em;
   cursor: pointer;
-  transition: background 0.3s;
   padding: 1em;
-  background: transparent;
   border: none;
   outline: none;
   cursor: pointer;
-}
-
-.select-clicked {
-  box-shadow: 0 0 0.8em rgba(0, 0, 0, 0.2);
-}
-
-.sort-options:hover {
-  background: rgb(245, 245, 245);
-}
-
-.caret {
-  width: 0;
-  height: 0;
-  border-left: 5px solid transparent;
-  border-right: 5px solid transparent;
-  border-top: 6px solid black;
-  transition: 0.3s;
-}
-
-.caret-rotate {
-  transform: rotate(180deg);
 }
 
 .menu {
@@ -378,9 +380,8 @@ input[type="password"]:focus {
   display: none;
   transition: 0.2s;
   z-index: 2;
-  max-height: 20em;
   overflow-y: auto;
-  width: 100px;
+  min-width: 100px;
 }
 
 .menu li {
@@ -388,11 +389,16 @@ input[type="password"]:focus {
   margin: 0.3em 0;
   border-radius: 1em;
   cursor: pointer;
-  color: rgb(100, 100, 100);
 }
 
 .menu li:hover {
-  background: rgb(237, 237, 237);
+  background-color: #eeeafc;
+}
+
+.menu li.selected {
+  background-color: #e4dff7;
+  color: #57068c;
+  transform: scale(1.05);
 }
 
 .menu-open {

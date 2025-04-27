@@ -438,6 +438,8 @@ def get_all_groups():
         groups.reverse()
     elif sort == 'members':
         groups = sorted(groups, key=lambda x: len(x["members"]), reverse=True)
+    elif sort == 'alphabetical':
+        groups = sorted(groups, key=lambda x: x["name"])
     return json_util.dumps(groups), 200, {'Content-Type': 'application/json'}
 
 

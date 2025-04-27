@@ -27,9 +27,11 @@ document.addEventListener("DOMContentLoaded", async(event) => {
         click_off.style.display = 'block';
     })
 
-    document.querySelectorAll('.menu li').forEach(li => {
+    Array.from(menu.children).forEach(li => {
         li.addEventListener('click', () => {
+            Array.from(menu.children).forEach(child => child.className = '');
             const sort = li.getAttribute('data-sort')
+            li.className = 'selected'
             current_sort = sort
             display_groups(current_search_text, current_sort)
         });
