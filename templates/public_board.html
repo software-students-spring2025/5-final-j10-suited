@@ -2,78 +2,94 @@
 {% block title %}Public Board{% endblock %}
 {% block content %}
 
-<div style="padding-top: 100px; display: flex; flex-direction: column; align-items: center; padding: 40px; width: 100%;">
+<div style="padding-top:100px; display:flex; flex-direction:column; align-items:center; padding:40px; width:100%;">
 
-  <div style="background-color: white; padding: 30px; border-radius: 16px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1); width: 100%; max-width: 500px;">
-    <form action="{{ url_for('add_post') }}" method="post" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 16px;">
-      
-      <textarea 
-        name="text" 
-        placeholder="Share your post with everyone..." 
-        required
-        style="
-          width: 100%;
-          min-height: 120px;
-          padding: 14px 16px;
-          font-size: 16px;
-          border: 1px solid #ccc;
-          border-radius: 8px;
-          resize: vertical;
-          box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-          transition: border-color 0.3s, box-shadow 0.3s;
-        "
-        onfocus="this.style.borderColor='#57068c'; this.style.boxShadow='0 0 0 3px rgba(87, 6, 140, 0.15)';"
-        onblur="this.style.borderColor='#ccc'; this.style.boxShadow='0 2px 6px rgba(0,0,0,0.05)';"
-      >{{ request.form.get('text', '') }}</textarea>
+  <div style="background-color:white; padding:30px; border-radius:16px; box-shadow:0 8px 24px rgba(0,0,0,0.1); width:100%; max-width:500px;">
+    <form action="{{ url_for('add_post') }}" method="post" enctype="multipart/form-data" style="display:flex; flex-direction:column; gap:16px;">
+      <textarea name="text" placeholder="Share your post with everyone..." required
+                style="width:100%; min-height:120px; padding:14px 16px; font-size:16px;
+                       border:1px solid #ccc; border-radius:8px; resize:vertical;
+                       box-shadow:0 2px 6px rgba(0,0,0,0.05); transition:border-color 0.3s, box-shadow 0.3s;"
+                onfocus="this.style.borderColor='#57068c'; this.style.boxShadow='0 0 0 3px rgba(87,6,140,0.15)';"
+                onblur="this.style.borderColor='#ccc'; this.style.boxShadow='0 2px 6px rgba(0,0,0,0.05)';">
+      {{ request.form.get('text', '') }}</textarea>
 
-      <div style="position: relative;">
-        <label for="file-upload" 
-          style="background-color: #57068c; color: white; padding: 10px 15px; border-radius: 8px; cursor: pointer; font-size: 16px; transition: background-color 0.3s ease;"
-          onmouseover="this.style.backgroundColor='#3f056b'" 
-          onmouseout="this.style.backgroundColor='#57068c'">
+      <div style="position:relative;">
+        <label for="file-upload"
+               style="background-color:#57068c; color:white; padding:10px 15px;
+                      border-radius:8px; cursor:pointer; font-size:16px; transition:background-color 0.3s;"
+               onmouseover="this.style.backgroundColor='#3f056b'"
+               onmouseout="this.style.backgroundColor='#57068c'">
           Upload Photo/Video
         </label>
-        <input 
-          id="file-upload" 
-          name="file" 
-          type="file" 
-          style="opacity: 0; position: absolute; left: 0; top: 0; height: 100%; width: 100%; cursor: pointer;">
+        <input id="file-upload" name="file" type="file"
+               style="opacity:0; position:absolute; left:0; top:0; height:100%; width:100%; cursor:pointer;">
       </div>
 
       <button type="submit" class="submit-button">Post</button>
-
     </form>
   </div>
 
-  <hr style="margin: 40px 0; width: 100%; max-width: 500px;">
+  <hr style="margin:40px 0; width:100%; max-width:500px;">
 
-  <h2 style="color: #57068c;">Public Posts</h2>
+  <h2 style="color:#57068c;">Public Posts</h2>
 
-  <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 20px; width: 100%; max-width: 800px;">
+  <div style="display:grid;
+              grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+              gap:20px;
+              width:100%;
+              max-width:800px;
+              margin-top:16px;">
     {% for post in posts %}
-      <div class="group" 
-        style="background-color: #e4dff7; border-radius: 8px; width: 150px; height: auto; min-height: 100px; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 10px; text-decoration: none; text-align: center;">
-        
-        <strong style="font-size: 16px; color: #333;">{{ post.username }}</strong>
-        <em style="font-size: 12px; color: grey;">{{ post.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</em>
+      <a href="{{ url_for('post_detail', post_id=post.id) }}"
+         style="text-decoration:none; color:inherit;">
+        <div class="group"
+             style="
+               background-color:#e4dff7;
+               border-radius:8px;
+               padding:12px;
+               display:flex;
+               flex-direction:column;
+               justify-content:space-between;
+               height:220px;
+               box-shadow:0 2px 6px rgba(0,0,0,0.1);
+               transition:transform .1s;
+             "
+             onmouseover="this.style.transform='translateY(-4px)'"
+             onmouseout="this.style.transform='translateY(0)'">
+          <!-- header -->
+          <div>
+            <strong style="font-size:16px; color:#333;">{{ post.username }}</strong>
+            <em style="display:block; font-size:12px; color:grey; margin:4px 0;">
+              {{ post.timestamp.strftime('%Y-%m-%d %H:%M') }}
+            </em>
+          </div>
 
-        <p style="font-size: 14px; margin-top: 8px;">{{ post.text }}</p>
+          <p style="
+               font-size:14px;
+               color:#000;
+               margin:8px 0;
+               overflow:hidden;
+               text-overflow:ellipsis;
+               display:-webkit-box;
+               -webkit-line-clamp:3;
+               -webkit-box-orient:vertical;
+             ">
+            {{ post.text }}
+          </p>
 
-        {% if post.filename %}
-          {% if post.filename.endswith(('jpg', 'jpeg', 'png', 'gif')) %}
-            <img src="{{ url_for('static', filename='uploads/' + post.filename) }}" 
-              style="margin-top: 8px; max-width: 100%; max-height: 100px; object-fit: cover; border-radius: 8px;">
-          {% elif post.filename.endswith('mp4') %}
-            <video controls 
-              style="margin-top: 8px; max-width: 100%; max-height: 100px; border-radius: 8px;">
-              <source src="{{ url_for('static', filename='uploads/' + post.filename) }}" type="video/mp4">
-            </video>
-          {% else %}
-            <a href="{{ url_for('static', filename='uploads/' + post.filename) }}" style="color: #57068c; font-size: 12px;">Download</a>
-          {% endif %}
-        {% endif %}
-
-      </div>
+          <!-- footer -->
+          <div style="
+               display:flex;
+               justify-content:space-between;
+               font-size:12px;
+               color:#57068c;
+             ">
+            <span>👍 {{ post.score }}</span>
+            <span>💬 {{ post.comment_count }}</span>
+          </div>
+        </div>
+      </a>
     {% endfor %}
   </div>
 

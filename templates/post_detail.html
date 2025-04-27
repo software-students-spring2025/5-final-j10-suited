@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Post Details{% endblock %}
+{% block content %}
+
+<div style="max-width:700px; margin:40px auto; padding:20px; background:#fff; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.1);">
+  <h2>{{ post.text }}</h2>
+  <p>by {{ post.username }} at {{ post.timestamp.strftime('%Y-%m-%d %H:%M') }}</p>
+  <p>Score: {{ post.score }}</p>
+
+  <form action="{{ url_for('vote') }}" method="post" style="display:inline;">
+    <input type="hidden" name="type" value="post">
+    <input type="hidden" name="id"   value="{{ post._id }}">
+    <input type="hidden" name="vote" value="1">
+    <input type="hidden" name="next" value="{{ request.path }}">
+    <button type="submit">▲</button>
+  </form>
+  <form action="{{ url_for('vote') }}" method="post" style="display:inline;">
+    <input type="hidden" name="type" value="post">
+    <input type="hidden" name="id"   value="{{ post._id }}">
+    <input type="hidden" name="vote" value="-1">
+    <input type="hidden" name="next" value="{{ request.path }}">
+    <button type="submit">▼</button>
+  </form>
+
+  <hr>
+
+  <form action="{{ url_for('add_comment', post_id=post._id) }}" method="post" style="margin-bottom:20px;">
+    <textarea name="text" placeholder="Add a comment…" required
+              style="width:100%; min-height:80px; padding:8px; border:1px solid #ccc; border-radius:4px;"></textarea>
+    <input type="hidden" name="parent_id" value="">
+    <button type="submit" style="margin-top:8px;">Comment</button>
+  </form>
+
+  <hr>
+
+  {% macro render_comments(parent_id, tree, depth=0) %}
+    {% for c in tree.get(parent_id, []) %}
+      <div style="margin-left:{{ depth*20 }}px; border-left:1px solid #eee; padding-left:10px; margin-bottom:12px;">
+        <p><strong>{{ c.username }}</strong> <em>({{ c.timestamp }})</em> — Score {{ c.score }}</p>
+        <p>{{ c.text }}</p>
+
+        <form action="{{ url_for('vote') }}" method="post" style="display:inline;">
+          <input type="hidden" name="type" value="comment">
+          <input type="hidden" name="id"   value="{{ c.id }}">
+          <input type="hidden" name="vote" value="1">
+          <input type="hidden" name="next" value="{{ request.path }}">
+          <button type="submit">▲</button>
+        </form>
+        <form action="{{ url_for('vote') }}" method="post" style="display:inline;">
+          <input type="hidden" name="type" value="comment">
+          <input type="hidden" name="id"   value="{{ c.id }}">
+          <input type="hidden" name="vote" value="-1">
+          <input type="hidden" name="next" value="{{ request.path }}">
+          <button type="submit">▼</button>
+        </form>
+
+        <button type="button" onclick="document.getElementById('reply-{{ c.id }}').style.display='block'">
+          Reply
+        </button>
+        <div id="reply-{{ c.id }}" style="display:none; margin-top:8px;">
+          <form action="{{ url_for('add_comment', post_id=post._id) }}" method="post">
+            <textarea name="text" placeholder="Your reply…" required
+                      style="width:100%; min-height:60px; padding:6px; border:1px solid #ccc; border-radius:4px;"></textarea>
+            <input type="hidden" name="parent_id" value="{{ c.id }}">
+            <button type="submit" style="margin-top:6px;">Reply</button>
+          </form>
+        </div>
+
+        {{ render_comments(c.id, tree, depth+1) }}
+      </div>
+    {% endfor %}
+  {% endmacro %}
+
+  {{ render_comments(None, tree) }}
+</div>
+
+{% endblock %}

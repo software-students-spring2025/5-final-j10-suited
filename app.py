@@ -32,6 +32,16 @@ app.config["MONGO_URI"] = os.getenv(
         "MONGO_URI",
         "mongodb://admin:secretpassword@localhost:27017/gesture_auth?authSource=admin",
     )
+
+db.Votes.create_index(
+    [
+      ('user_id',    pymongo.ASCENDING),
+      ('target_id',  pymongo.ASCENDING),
+      ('target_type',pymongo.ASCENDING)
+    ],
+    unique=True
+)
+
 app.secret_key = os.getenv("SECRET_KEY", "secretsecretkey")
 
 app.config.update(
@@ -457,11 +467,21 @@ def get_all_groups():
     return json_util.dumps(groups), 200, {'Content-Type': 'application/json'}
 
 @app.route('/public_board')
+@login_required    
 def public_board():
-    posts = db.PublicPosts.find().sort('timestamp', -1) 
+    cursor = db.PublicPosts.find().sort('timestamp', -1)
+    posts = []
+    for p in cursor:
+        comment_count = db.PublicComments.count_documents({
+            'post_id': p['_id']
+        })
+        p['id']            = str(p['_id'])
+        p['comment_count'] = comment_count
+        posts.append(p)
     return render_template('public_board.html', posts=posts)
 
 @app.route('/add_post', methods=['POST'])
+@login_required
 def add_post():
     username = current_user.first_name  
     text = request.form.get('text')
@@ -473,13 +493,91 @@ def add_post():
         file.save(os.path.join('static/uploads', filename))
 
     db.PublicPosts.insert_one({
-        'username': username,
-        'text': text,
+        'username':  username,
+        'text':      text,
         'timestamp': datetime.datetime.now(),
-        'filename': filename
+        'filename':  filename,
+        'score':     0
     })
-
     return redirect(url_for('public_board'))
+
+@app.route('/post/<post_id>')
+def post_detail(post_id):
+    post = db.PublicPosts.find_one({'_id': ObjectId(post_id)})
+    if not post:
+        abort(404)
+
+    comments = list(db.PublicComments.find({'post_id': post['_id']})
+                             .sort('timestamp', 1))
+
+    tree = {}
+    for c in comments:
+        c['id']        = str(c['_id'])
+        c['parent_id'] = str(c['parent_id']) if c.get('parent_id') else None
+        c['timestamp'] = c['timestamp'].strftime('%Y-%m-%d %H:%M')
+        tree.setdefault(c['parent_id'], []).append(c)
+
+    return render_template('post_detail.html',
+                           post=post, tree=tree)
+
+@app.route('/post/<post_id>/comment', methods=['POST'])
+@login_required
+def add_comment(post_id):
+    parent = request.form.get('parent_id')  
+    text   = request.form['text'].strip()
+    if not text:
+        flash('Cannot post empty comment.', 'warning')
+        return redirect(url_for('post_detail', post_id=post_id))
+
+    db.PublicComments.insert_one({
+        'post_id':   ObjectId(post_id),
+        'parent_id': ObjectId(parent) if parent else None,
+        'user_id':   ObjectId(current_user.id),
+        'username':  current_user.first_name,
+        'text':      text,
+        'timestamp': datetime.datetime.now(),
+        'score':     0
+    })
+    return redirect(url_for('post_detail', post_id=post_id))
+
+@app.route('/vote', methods=['POST'])
+@login_required
+def vote():
+    user_id     = ObjectId(current_user.id)
+    target_id   = ObjectId(request.form['id'])
+    vote_val    = int(request.form['vote'])   
+    target_type = request.form['type']       
+
+    # pick the right collection
+    coll = db.PublicPosts if target_type == 'post' else db.PublicComments
+
+    # vote record key
+    vote_doc = {
+      'user_id':     user_id,
+      'target_id':   target_id,
+      'target_type': target_type
+    }
+
+    existing = db.Votes.find_one(vote_doc)
+    if existing:
+        if existing['vote'] == vote_val:
+            # already voted the same way
+            flash('You already voted.', 'info')
+        else:
+            
+            coll.update_one({'_id': target_id},
+                            {'$inc': {'score': 2 * vote_val}})
+            db.Votes.update_one(vote_doc, {'$set': {'vote': vote_val}})
+    else:
+        # first time voting
+        coll.update_one({'_id': target_id},
+                        {'$inc': {'score': vote_val}})
+        db.Votes.insert_one({**vote_doc,
+                             'vote':      vote_val,
+                             'timestamp': datetime.datetime.now()})
+    # go back where we came from
+    return redirect(request.form.get('next') or url_for('public_board'))
+
 
 if __name__ == "__main__":
     socketio.run(app, host='0.0.0.0', port=5001, debug=True)
