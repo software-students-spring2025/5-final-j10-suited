@@ -754,3 +754,8 @@ input[type="file"]:hover {
       left: 20px;
       z-index: 1000;
     }
+
+    .login-container a.nyu-login-button {
+      color: #fff;
+    }
+    
