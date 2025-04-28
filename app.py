@@ -320,6 +320,7 @@ def get_user():
         return profile
 
 @app.route("/profile")
+@login_required
 def profile():
     #registration does not ask for grade, major, age etc. 
     #should add "finish setting up profile" option here to add those things
