@@ -19,7 +19,7 @@
 5. [Database Initialization](#database-initialization)  
 6. [Running Tests](#running-tests)  
 7. [CI/CD & Docker Images](#cicd--docker-images)  
-8. [Team](#team)  
+8. [Team](#team)
 9. [License](#license)  
 
 ---
