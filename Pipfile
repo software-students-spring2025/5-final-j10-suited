@@ -13,9 +13,9 @@ flask-socketio = "*"
 pylint = "*"
 black = "*"
 eventlet = "*"
-python-dotenv = "*"
 dotenv = "*"
 pytest = "*"
+python-dotenv = "*"
 
 [dev-packages]
 
