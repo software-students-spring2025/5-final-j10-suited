@@ -5,10 +5,10 @@ from app import app, mongo, db
 
 @pytest.fixture
 def client():
-    """Create a Flask test client, clear the test DB before & after."""
+    """Create a Flask test client and ensure a clean test database."""
     app.config["TESTING"] = True
     client = app.test_client()
-    # wipe all collections
+    # Drop the test database before and after each test session
     mongo.drop_database(db.name)
     yield client
     mongo.drop_database(db.name)
@@ -120,6 +120,9 @@ def test_chat_page_requires_login(client):
 
 def test_chat_page_empty_history(login_user):
     client, current = login_user
+    # Ensure messages collection is empty
+    db.Messages.delete_many({})
+
     # create a second user
     other_doc = db.Users.insert_one({
         "first_name": "Chat",
@@ -134,12 +137,15 @@ def test_chat_page_empty_history(login_user):
 
     rv = client.get(f"/chat/{other_id}")
     assert rv.status_code == 200
-    # No messages yet: no bubble divs
-    assert b'class="bubble"' not in rv.data
+    # No server-rendered messages: ensure no <div class="message ...">
+    assert b'class="message' not in rv.data
 
 
 def test_chat_page_with_history(login_user):
     client, current = login_user
+    # Clear any stray messages
+    db.Messages.delete_many({})
+
     # create other user
     other_doc = db.Users.insert_one({
         "first_name": "Chat",
@@ -164,6 +170,7 @@ def test_chat_page_with_history(login_user):
     })
 
     rv = client.get(f"/chat/{other_id}")
+    assert rv.status_code == 200
     assert b"Hello there!" in rv.data
     # Should show "You" in meta for your message
     assert b"You" in rv.data
