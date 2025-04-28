@@ -395,14 +395,14 @@ def group_detail(gid):
 @login_required
 def join_group(gid):
     db.Groups.update_one({"_id": ObjectId(gid)}, {"$addToSet": {"members": ObjectId(current_user.id)}})
-    db.Users.update_one({"_id": ObjectId(current_user.get_id())}, {"$addToSet": {"joined_groups": gid}})
+    db.Users.update_one({"_id": ObjectId(current_user.get_id())}, {"$addToSet": {"joined_groups": ObjectId(gid)}})
     return redirect(url_for('group_detail', gid=gid))
 
 @app.route('/groups/<gid>/leave', methods=['POST'])
 @login_required
 def leave_group(gid):
     db.Groups.update_one({"_id": ObjectId(gid)}, {"$pull": {"members": ObjectId(current_user.id)}})
-    db.Users.update_one({"_id": ObjectId(current_user.get_id())}, {"$pull": {"joined_groups": gid}})
+    db.Users.update_one({"_id": ObjectId(current_user.get_id())}, {"$pull": {"joined_groups": ObjectId(gid)}})
     return redirect(url_for('group_browser'))
 
 @app.route('/groups/<gid>/post', methods=['POST'])
