@@ -8,6 +8,16 @@
   <div class="post-meta">
     by {{ post.username }} at {{ post.timestamp.strftime('%Y-%m-%d %H:%M') }}
   </div>
+    <!-- Attached image -->
+    {% if post.file_id %}
+    <div class="post-image" style="text-align:center; margin-bottom:16px;">
+      <img
+        src="{{ url_for('serve_file', file_id=post.file_id) }}"
+        alt="Attached image"
+        style="max-width:100%; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.1);"
+      />
+    </div>
+  {% endif %}
   <div class="vote-section">
     <form action="{{ url_for('vote') }}" method="post">
       <input type="hidden" name="type"  value="post">

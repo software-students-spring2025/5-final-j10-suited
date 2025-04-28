@@ -102,13 +102,6 @@
             "markers": "python_version >= '3.9'",
             "version": "==2.7.0"
         },
-        "dotenv": {
-            "hashes": [
-                "sha256:29cf74a087b31dafdb5a446b6d7e11cbce8ed2741540e2339c69fbef92c94ce9"
-            ],
-            "index": "pypi",
-            "version": "==0.9.9"
-        },
         "eventlet": {
             "hashes": [
                 "sha256:2a349b6bca3471c7fc51e838beff9be94d3b9a146dc31c80890d69333ba03b80",
