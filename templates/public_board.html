@@ -5,7 +5,7 @@
 <div style="padding-top:100px; display:flex; flex-direction:column; align-items:center; padding:40px; width:100%;">
 
   <div style="background-color:white; padding:30px; border-radius:16px; box-shadow:0 8px 24px rgba(0,0,0,0.1); width:100%; max-width:500px;">
-    <form action="{{ url_for('add_post') }}" method="post" enctype="multipart/form-data" style="display:flex; flex-direction:column; gap:16px;">
+    <form id="post-form" action="{{ url_for('add_post') }}" method="post" enctype="multipart/form-data" style="display:flex; flex-direction:column; gap:16px;">
       <textarea name="text" placeholder="Share your post with everyone..." required
                 style="width:100%; min-height:120px; padding:14px 16px; font-size:16px;
                        border:1px solid #ccc; border-radius:8px; resize:vertical;
@@ -14,7 +14,7 @@
                 onblur="this.style.borderColor='#ccc'; this.style.boxShadow='0 2px 6px rgba(0,0,0,0.05)';">
       {{ request.form.get('text', '') }}</textarea>
 
-      <div style="position:relative;">
+      <div style="display:flex; flex-direction:column; gap:8px;">
         <label for="file-upload"
                style="background-color:#57068c; color:white; padding:10px 15px;
                       border-radius:8px; cursor:pointer; font-size:16px; transition:background-color 0.3s;"
@@ -22,8 +22,11 @@
                onmouseout="this.style.backgroundColor='#57068c'">
           Upload Photo/Video
         </label>
-        <input id="file-upload" name="file" type="file"
-               style="opacity:0; position:absolute; left:0; top:0; height:100%; width:100%; cursor:pointer;">
+        <input id="file-upload" name="file" type="file" accept="image/*"
+               style="display:none;" />
+        <div id="file-preview"
+             style="font-size:14px; color:#555; display:none; word-break:break-all;">
+        </div>
       </div>
 
       <button type="submit" class="submit-button">Post</button>
@@ -65,6 +68,7 @@
             </em>
           </div>
 
+          <!-- text -->
           <p style="
                font-size:14px;
                color:#000;
@@ -77,6 +81,17 @@
              ">
             {{ post.text }}
           </p>
+
+          <!-- image -->
+          {% if post.file_id %}
+            <div style="text-align:center; margin:8px 0;">
+              <img
+                src="{{ url_for('serve_file', file_id=post.file_id) }}"
+                alt="Post image"
+                style="max-width:100%; max-height:100px; border-radius:8px; object-fit:cover;"
+              />
+            </div>
+          {% endif %}
 
           <!-- footer -->
           <div style="
@@ -94,5 +109,19 @@
   </div>
 
 </div>
+
+<script>
+  document.getElementById('file-upload').addEventListener('change', function() {
+    const file = this.files[0];
+    const preview = document.getElementById('file-preview');
+    if (!file) {
+      preview.style.display = 'none';
+      preview.textContent = '';
+      return;
+    }
+    preview.textContent = file.name;
+    preview.style.display = 'block';
+  });
+</script>
 
 {% endblock %}

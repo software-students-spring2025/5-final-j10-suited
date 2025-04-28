@@ -6,7 +6,8 @@ from dotenv import load_dotenv
 from bson import ObjectId, json_util
 import pymongo
 import certifi
-from flask import Flask, render_template, request, redirect, url_for, session, flash, abort, jsonify
+from gridfs import GridFS
+from flask import Flask, render_template, request, redirect, url_for, session, flash, abort, jsonify, Response
 from flask_login import (
     LoginManager, UserMixin,
     login_user, login_required,
@@ -14,6 +15,7 @@ from flask_login import (
 )
 from flask_socketio import SocketIO, join_room, leave_room, emit
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 from flask_mail import Mail, Message
 
 load_dotenv()
@@ -28,6 +30,7 @@ mongo = pymongo.MongoClient(
     tlsCAFile=certifi.where(), tls=True, 
 )
 db = mongo[os.getenv("MONGO_DBNAME", "test_db")]
+fs = GridFS(db) 
 app.config["MONGO_URI"] = os.getenv(
         "MONGO_URI",
         "mongodb://admin:secretpassword@localhost:27017/gesture_auth?authSource=admin",
@@ -492,16 +495,23 @@ def add_post():
     text = request.form.get('text')
     file = request.files.get('file')
 
-    filename = None
-    if file:
-        filename = file.filename
-        file.save(os.path.join('static/uploads', filename))
+    file_id = None
+    if file and file.filename:
+        # secure the filename and stream into GridFS
+        safe_name = secure_filename(file.filename)
+        file_id   = fs.put(
+            file.stream,
+            filename=safe_name,
+            content_type=file.mimetype,
+            upload_date=datetime.datetime.now(),
+            user_id=current_user.id
+        )
 
     db.PublicPosts.insert_one({
         'username':  username,
         'text':      text,
         'timestamp': datetime.datetime.now(),
-        'filename':  filename,
+        'file_id':  file_id,
         'score':     0
     })
     return redirect(url_for('public_board'))
@@ -524,6 +534,17 @@ def post_detail(post_id):
 
     return render_template('post_detail.html',
                            post=post, tree=tree)
+
+@app.route('/uploads/<file_id>')
+def serve_file(file_id):
+    # 1) Fetch the file from GridFS by its ObjectId
+    grid_out = fs.get(ObjectId(file_id))
+    # 2) Stream it back to the browser with the correct MIME type
+    return Response(
+        grid_out.read(),
+        mimetype=grid_out.content_type,
+        headers={'Content-Disposition': f'inline; filename={grid_out.filename}'}
+    )
 
 @app.route('/post/<post_id>/comment', methods=['POST'])
 @login_required
