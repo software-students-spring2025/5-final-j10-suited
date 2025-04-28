@@ -1,7 +1,6 @@
 # 5-Final-J10-Suited
 
-[![Flask App CI](https://img.shields.io/github/actions/workflow/status/software-students-spring2025/5-final-j10-suited/flask-app.yml?branch=main)](https://github.com/software-students-spring2025/5-final-j10-suited/actions)
-[![Docker Pulls](https://img.shields.io/docker/pulls/<DOCKERHUB_USERNAME>/flask-app)](https://hub.docker.com/r/<DOCKERHUB_USERNAME>/flask-app)
+🔗 **Live Demo**: https://connectnyu-af7ih.ondigitalocean.app
 
 > A Flask-based social “public board” for NYU students: join interest groups, post text + media, and have threaded, voteable discussions—powered by MongoDB, containerized with Docker, and deployed with GitHub Actions & DigitalOcean.
 
@@ -44,8 +43,6 @@
 - **CI/CD**: GitHub Actions (build, test, Docker Hub publish, DigitalOcean deploy)  
 - **Dependency Management**: Pipenv  
 - **Testing**: PyTest  
-
-![Architecture Overview](docs/architecture.png) *(optional)*
 
 ---
 
