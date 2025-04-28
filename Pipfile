@@ -10,12 +10,12 @@ certifi = "*"
 flask-mail = "*"
 flask-login = "*"
 flask-socketio = "*"
-pytest = "*"
 pylint = "*"
 black = "*"
 eventlet = "*"
 python-dotenv = "*"
 dotenv = "*"
+pytest = "*"
 
 [dev-packages]
 

@@ -452,15 +452,6 @@
             "markers": "python_version >= '3.8'",
             "version": "==8.3.5"
         },
-        "python-dotenv": {
-            "hashes": [
-                "sha256:41f90bc6f5f177fb41f53e87666db362025010eb28f60a01c9143bfa33a2b2d5",
-                "sha256:d7c01d9e2293916c18baf562d95698754b0dbbb5e74d457c45d4f6561fb9d55d"
-            ],
-            "index": "pypi",
-            "markers": "python_version >= '3.9'",
-            "version": "==1.1.0"
-        },
         "python-engineio": {
             "hashes": [
                 "sha256:a0c47c129c39777e8ebc6d18011efd50db2144e4e8f08983acae8a3614626535",
