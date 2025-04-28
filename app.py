@@ -320,6 +320,7 @@ def get_user():
         return profile
 
 @app.route("/profile")
+@login_required
 def profile():
     #registration does not ask for grade, major, age etc. 
     #should add "finish setting up profile" option here to add those things
@@ -371,10 +372,14 @@ def group_detail(gid):
     history = []
     for m in db.Messages.find({'group_id': ObjectId(gid)}).sort('timestamp', 1):
         user = db.Users.find_one({'_id': m['user_id']})
+        if user:
+            username = user.get('first_name')
+        else:
+            username = 'Unknown'
         history.append({
             'sender_id': str(m['user_id']),
-            'username':  user.get('first_name', 'Unknown'),
-            'body':      m['content'],
+            'username':  username,
+            'body': m['content'],
             'timestamp': m['timestamp'].strftime('%Y-%m-%d %H:%M:%S')
         })
 
@@ -395,14 +400,14 @@ def group_detail(gid):
 @login_required
 def join_group(gid):
     db.Groups.update_one({"_id": ObjectId(gid)}, {"$addToSet": {"members": ObjectId(current_user.id)}})
-    db.Users.update_one({"_id": ObjectId(current_user.get_id())}, {"$addToSet": {"joined_groups": gid}})
+    db.Users.update_one({"_id": ObjectId(current_user.get_id())}, {"$addToSet": {"joined_groups": ObjectId(gid)}})
     return redirect(url_for('group_detail', gid=gid))
 
 @app.route('/groups/<gid>/leave', methods=['POST'])
 @login_required
 def leave_group(gid):
     db.Groups.update_one({"_id": ObjectId(gid)}, {"$pull": {"members": ObjectId(current_user.id)}})
-    db.Users.update_one({"_id": ObjectId(current_user.get_id())}, {"$pull": {"joined_groups": gid}})
+    db.Users.update_one({"_id": ObjectId(current_user.get_id())}, {"$pull": {"joined_groups": ObjectId(gid)}})
     return redirect(url_for('group_browser'))
 
 @app.route('/groups/<gid>/post', methods=['POST'])
