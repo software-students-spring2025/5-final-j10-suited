@@ -15,6 +15,7 @@ pylint = "*"
 black = "*"
 eventlet = "*"
 python-dotenv = "*"
+dotenv = "*"
 
 [dev-packages]
 
