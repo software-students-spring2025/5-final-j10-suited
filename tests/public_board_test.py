@@ -8,7 +8,6 @@ from bson import ObjectId
 from importlib import reload
 from flask_login import AnonymousUserMixin
 
-# ── Patch Mongomock BEFORE importing app.py ───────────────────────────
 mongomock.gridfs.enable_gridfs_integration()
 pymongo.MongoClient = mongomock.MongoClient
 
@@ -21,20 +20,15 @@ class DummyAnon(AnonymousUserMixin):
 
 @pytest.fixture(autouse=True)
 def configure_test_db(monkeypatch):
-    # Prevent MAIL_PORT conversion errors
     monkeypatch.setenv("MAIL_PORT", "587")
-    # Use an isolated in-memory test database
     monkeypatch.setenv("MONGO_DBNAME", "public_board_test_db")
 
-    # Import & reload the Flask app under our patched env
     import app
     reload(app)
 
-    # Disable login_required for initial tests
     app.app.config['LOGIN_DISABLED'] = True
     app.login_manager.anonymous_user = DummyAnon
 
-    # Override mongo + db to use in-memory mock
     app.mongo = mongomock.MongoClient()
     app.db = app.mongo["public_board_test_db"]
     return app
@@ -47,7 +41,6 @@ def client(configure_test_db):
 
 
 def test_public_board_loads(client):
-    # Page should load even when not logged in
     response = client.get('/public_board')
     assert response.status_code == 200
 
@@ -57,7 +50,6 @@ def test_add_post_without_file(client, monkeypatch):
     captured = {}
     def fake_insert(doc):
         captured['doc'] = doc
-    # Patch insert_one
     monkeypatch.setattr(tested_app.db.PublicPosts, 'insert_one', fake_insert)
 
     response = client.post(
@@ -73,9 +65,7 @@ def test_add_post_without_file(client, monkeypatch):
 def test_add_post_with_file(client, monkeypatch):
     import app as tested_app
     captured = {}
-    # Patch fs.put to accept any kwargs
     monkeypatch.setattr(tested_app.fs, 'put', lambda *args, **kwargs: ObjectId())
-    # Patch insert_one
     def fake_insert(doc):
         captured['doc'] = doc
     monkeypatch.setattr(tested_app.db.PublicPosts, 'insert_one', fake_insert)
@@ -97,10 +87,8 @@ def test_add_post_with_file(client, monkeypatch):
 
 def test_public_board_requires_login(configure_test_db):
     app = configure_test_db
-    # Re-enable login enforcement
     app.app.config['LOGIN_DISABLED'] = False
     client = app.app.test_client()
     response = client.get('/public_board', follow_redirects=True)
-    # Should redirect to login
     assert response.status_code == 200
     assert b"login" in response.data.lower()
