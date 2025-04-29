@@ -1,61 +1,54 @@
 # 5-Final-J10-Suited
+![CI Build](https://github.com/software-students-spring2025/5-final-j10-suited/actions/workflows/build.yaml/badge.svg?event=pull_request)
 
-🔗 **Live Demo**: https://connectnyu-af7ih.ondigitalocean.app
+**Live Demo**: https://connectnyu-af7ih.ondigitalocean.app
 
-> A Flask-based social “public board” for NYU students: join interest groups, post text + media, and have threaded, voteable discussions—powered by MongoDB, containerized with Docker, and deployed with GitHub Actions & DigitalOcean.
+A Flask-based social network for members of the NYU community where users can join interest groups, post text + media, and have threaded, voteable discussions, with data is stored on MongoDB, containerized with Docker, and deployed using Digital Ocean.
 
 ---
 
-## Table of Contents
-
-1. [Features](#features)  
-2. [Tech Stack & Architecture](#tech-stack--architecture)  
-3. [Quick Start](#quick-start)  
-   - [Prerequisites](#prerequisites)  
-   - [Clone & Configure](#clone--configure)  
-   - [Run with Docker Compose](#run-with-docker-compose)  
-   - [Run Locally (no Docker)](#run-locally-no-docker)  
-4. [Environment Variables](#environment-variables)  
-5. [Database Initialization](#database-initialization)  
-6. [Running Tests](#running-tests)  
-7. [CI/CD & Docker Images](#cicd--docker-images)  
-8. [Team](#team)
-9. [License](#license)  
+## Team
+* [Ava August](https://github.com/aaugust22)
+* [Joel Kim](https://github.com/joel-d-kim)
+* [Jack Wang](https://github.com/JackInTheBox314)
+* [Tim Xu](https://github.com/timxu23)
 
 ---
 
 ## Features
 
-- **NYU SSO Login** (placeholder for real integration)  
-- **Group Management**: browse, create, and save interest groups  
+- **Group Management**: browse, create, and save interest groups where users can talk to other users with similar needs or interests 
 - **Public Board**: create text & photo/video posts  
 - **Nested Comments**: reply to any comment at any depth  
 - **Voting System**: upvote/downvote posts and comments  
+- **Direct Messaging**: talk to other users one on one
 
 ---
 
-## Tech Stack & Architecture
-
-- **Backend**: Python 3.13, Flask, Flask-Login, Flask-Mail, Flask-SocketIO  
-- **Database**: MongoDB (official Docker image)  
-- **Containerization**: Docker (separate `flask-app` & `mongo` services)  
-- **Orchestration**: Docker Compose  
-- **CI/CD**: GitHub Actions (build, test, Docker Hub publish, DigitalOcean deploy)  
-- **Dependency Management**: Pipenv  
-- **Testing**: PyTest  
+## Subsystems
+* MongoDB: [Docker Hub](https://hub.docker.com/_/mongo)
+* Flask: [Docker Hub](https://hub.docker.com/repository/docker/timxu23/5-final-j10-suited-flask-app)
 
 ---
 
-## Quick Start
+## Setup Instructions (local, dockerized)
 
-### Prerequisites
+Required software:
 
-- [Docker & Docker Compose](https://docs.docker.com/)  
-- [Pipenv](https://pipenv.pypa.io/) (if running locally)  
-- Python 3.13  
+- install and run [docker desktop](https://www.docker.com/get-started)
+- create a [dockerhub](https://hub.docker.com/signup) account
 
-### Clone & Configure
+Use Docker Compose to boot up both the mongodb database and the flask app using one command:
 
-```bash
-git clone https://github.com/software-students-spring2025/5-final-j10-suited.git
-cd 5-final-j10-suited
+- Navigate to app directory which contains `Dockerfile`
+- open Docker
+- `docker compose up --build` ... add -d to run in detached/background mode.
+- Ctrl + C then `docker compose down` when done to stop containers
+
+If port number already use, select different port for `flask-app` or `mongodb` by changing their values in `docker-compose.yml`
+
+View the app in browser:
+
+- open `http://localhost:5001` in preferred web browser (or whatever port number used for host)
+
+_Note that if any files were edited, container must be stopped then restarted_

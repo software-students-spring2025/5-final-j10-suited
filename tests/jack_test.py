@@ -1,14 +1,23 @@
 import pytest
-from bson import ObjectId
+import pymongo
+import mongomock
 from importlib import reload
+
+mongomock.gridfs.enable_gridfs_integration()
+pymongo.MongoClient = mongomock.MongoClient
 
 
 @pytest.fixture(autouse=True)
 def configure_test_db(monkeypatch):
     monkeypatch.setenv("MONGO_DBNAME", "myapp_test")
+
     import app
     reload(app)
+
+    app.mongo = mongomock.MongoClient()
+    app.db = app.mongo["myapp_test"]
     return app
+
 
 
 @pytest.fixture
