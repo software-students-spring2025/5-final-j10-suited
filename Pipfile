@@ -13,12 +13,13 @@ flask-socketio = "*"
 pylint = "*"
 black = "*"
 eventlet = "*"
-python-dotenv = "*"
 dotenv = "*"
 pytest = "*"
+python-dotenv = "*"
 pytest-cov = "*"
 
 [dev-packages]
+mongomock = "*"
 
 [requires]
 python_version = "3.13"

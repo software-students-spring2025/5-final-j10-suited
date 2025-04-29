@@ -537,9 +537,7 @@ def post_detail(post_id):
 
 @app.route('/uploads/<file_id>')
 def serve_file(file_id):
-    # 1) Fetch the file from GridFS by its ObjectId
     grid_out = fs.get(ObjectId(file_id))
-    # 2) Stream it back to the browser with the correct MIME type
     return Response(
         grid_out.read(),
         mimetype=grid_out.content_type,
