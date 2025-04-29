@@ -17,6 +17,7 @@ dotenv = "*"
 pytest = "*"
 python-dotenv = "*"
 pytest-cov = "*"
+mongomock = "*"
 
 [dev-packages]
 mongomock = "*"

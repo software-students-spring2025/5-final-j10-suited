@@ -402,6 +402,14 @@
             "markers": "python_version >= '3.6'",
             "version": "==0.7.0"
         },
+        "mongomock": {
+            "hashes": [
+                "sha256:32667b79066fabc12d4f17f16a8fd7361b5f4435208b3ba32c226e52212a8c30",
+                "sha256:5ef86bd12fc8806c6e7af32f21266c61b6c4ba96096f85129852d1c4fec1327e"
+            ],
+            "index": "pypi",
+            "version": "==4.3.0"
+        },
         "mypy-extensions": {
             "hashes": [
                 "sha256:1be4cccdb0f2482337c4743e60421de3a356cd97508abadd57d47403e94f5505",
@@ -548,6 +556,19 @@
             ],
             "markers": "python_version >= '3.8'",
             "version": "==5.13.0"
+        },
+        "pytz": {
+            "hashes": [
+                "sha256:360b9e3dbb49a209c21ad61809c7fb453643e048b38924c765813546746e81c3",
+                "sha256:5ddf76296dd8c44c26eb8f4b6f35488f3ccbf6fbbd7adee0b7262d43f0ec2f00"
+            ],
+            "version": "==2025.2"
+        },
+        "sentinels": {
+            "hashes": [
+                "sha256:7be0704d7fe1925e397e92d18669ace2f619c92b5d4eb21a89f31e026f9ff4b1"
+            ],
+            "version": "==1.0.0"
         },
         "simple-websocket": {
             "hashes": [

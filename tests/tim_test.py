@@ -1,14 +1,29 @@
 import pytest
+import pymongo
+import mongomock
+import mongomock.gridfs
 from bson import ObjectId
 from werkzeug.security import generate_password_hash
 from importlib import reload
 
+# ── Patch BEFORE importing app.py ───────────────────────────
+mongomock.gridfs.enable_gridfs_integration()
+pymongo.MongoClient = mongomock.MongoClient
+
 @pytest.fixture(autouse=True)
 def configure_test_db(monkeypatch):
-    # point at a throw‐away test database
+    # Ensure MAIL_PORT is valid
+    monkeypatch.setenv("MAIL_PORT", "587")
+    # Point at a throw‐away in-memory test DB
     monkeypatch.setenv("MONGO_DBNAME", "myapp_test")
+
+    # Import/reload your Flask app under the patched client + env
     import app
     reload(app)
+
+    # Override module‐level mongo + db
+    app.mongo = mongomock.MongoClient()
+    app.db = app.mongo["myapp_test"]
     return app
 
 @pytest.fixture
@@ -32,13 +47,13 @@ def create_user(db):
         code="123456",
     ):
         user = {
-            "first_name": first_name,
-            "last_name":  last_name,
-            "email":      email,
-            "password":   generate_password_hash(password),
-            "verified":   verified,
-            "verification_code": code,
-            "joined_groups":     [],
+            "first_name":         first_name,
+            "last_name":          last_name,
+            "email":              email,
+            "password":           generate_password_hash(password),
+            "verified":           verified,
+            "verification_code":  code,
+            "joined_groups":      [],
         }
         res = db.Users.insert_one(user)
         user["_id"] = res.inserted_id
@@ -56,7 +71,6 @@ def login_user(client, create_user):
     assert b"Logged in successfully." in resp.data
     return client, user
 
-
 def test_register_page_structure(client):
     rv = client.get("/register")
     assert rv.status_code == 200
@@ -66,7 +80,6 @@ def test_register_page_structure(client):
     assert b'name="email"'            in html
     assert b'name="password"'         in html
     assert b'name="confirm_password"' in html
-
 
 def test_verify_email_get_and_post(client, create_user, db):
     user = create_user(email="verify@nyu.edu", code="999999")
@@ -90,19 +103,16 @@ def test_verify_email_get_and_post(client, create_user, db):
         data={"code": user["verification_code"]},
         follow_redirects=True
     )
-    # just assert success status, not flash text
     assert rv3.status_code == 200
 
-    # verify in DB
+    # Verify in DB
     updated = db.Users.find_one({"email": user["email"]})
     assert updated.get("verified", False) is True
-
 
 def test_users_list_requires_login(client):
     rv = client.get("/users", follow_redirects=True)
     assert rv.status_code == 200
     assert b"Login using your NYU email" in rv.data
-
 
 def test_users_list_shows_other_users(login_user, create_user):
     client, current = login_user
@@ -112,18 +122,13 @@ def test_users_list_shows_other_users(login_user, create_user):
     )
     rv = client.get("/users")
     assert rv.status_code == 200
-    html = rv.data
-    # ensures the other user is shown
-    assert b"other@nyu.edu" in html
-    # (removed check that current user is not shown)
-
+    assert b"other@nyu.edu" in rv.data
 
 def test_chat_page_requires_login(client):
     fake_id = str(ObjectId())
     rv = client.get(f"/chat/{fake_id}", follow_redirects=True)
     assert rv.status_code == 200
     assert b"Login using your NYU email" in rv.data
-
 
 def test_chat_page_empty_history(login_user, create_user):
     client, current = login_user
@@ -135,8 +140,6 @@ def test_chat_page_empty_history(login_user, create_user):
     )
     rv = client.get(f"/chat/{str(other['_id'])}")
     assert rv.status_code == 200
-    # removed check for specific HTML container
-
 
 def test_chat_page_with_history(login_user, create_user, db):
     client, current = login_user
@@ -147,7 +150,6 @@ def test_chat_page_with_history(login_user, create_user, db):
         verified=True
     )
 
-    # insert a single message
     from datetime import datetime, timezone
     room = "_".join(sorted([str(current["_id"]), str(other["_id"])]))
     db.Messages.insert_one({
@@ -160,4 +162,3 @@ def test_chat_page_with_history(login_user, create_user, db):
 
     rv = client.get(f"/chat/{str(other['_id'])}")
     assert rv.status_code == 200
-    # no longer asserting presence of raw message text in HTML
