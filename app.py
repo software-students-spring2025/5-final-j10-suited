@@ -22,11 +22,10 @@ load_dotenv()
 app = Flask(__name__)
 
 # initialize database
+uri = os.getenv("MONGO_URI") or \
+      "mongodb://admin:secretpassword@localhost:27017/gesture_auth?authSource=admin"
 mongo = pymongo.MongoClient(
-    os.getenv(
-        "MONGO_URI",
-        "mongodb://admin:secretpassword@localhost:27017/gesture_auth?authSource=admin",
-    ),
+    uri,
     tlsCAFile=certifi.where(), tls=True, 
 )
 db = mongo[os.getenv("MONGO_DBNAME", "test_db")]
