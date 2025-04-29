@@ -28,12 +28,15 @@ mongo = pymongo.MongoClient(
     uri,
     tlsCAFile=certifi.where(), tls=True, 
 )
-db = mongo[os.getenv("MONGO_DBNAME", "test_db")]
+db_name = os.getenv("MONGO_DBNAME", "test_db") or \
+            "test_db"
+db = mongo[db_name]
 fs = GridFS(db) 
-app.config["MONGO_URI"] = os.getenv(
+uri = os.getenv(
         "MONGO_URI",
         "mongodb://admin:secretpassword@localhost:27017/gesture_auth?authSource=admin",
-    )
+    ) or "mongodb://admin:secretpassword@localhost:27017/gesture_auth?authSource=admin"
+app.config["MONGO_URI"] = uri
 
 db.Votes.create_index(
     [
@@ -43,8 +46,8 @@ db.Votes.create_index(
     ],
     unique=True
 )
-
-app.secret_key = os.getenv("SECRET_KEY", "secretsecretkey")
+secretkey = os.getenv("SECRET_KEY", "secretsecretkey") or "secretsecretkey"
+app.secret_key = secretkey
 
 app.config.update(
     MAIL_SERVER=os.environ.get('MAIL_SERVER', 'smtp.example.com'),
