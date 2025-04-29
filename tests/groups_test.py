@@ -12,11 +12,13 @@ pymongo.MongoClient = mongomock.MongoClient
 
 @pytest.fixture(autouse=True)
 def client_and_db(monkeypatch):
-    # Pick a fresh in-memory test database name
+    # Ensure MAIL_PORT is valid (no empty-string float/int error)
+    monkeypatch.setenv("MAIL_PORT", "587")
+    # Pick a fresh in-memory test DB name
     test_dbname = "test_j10_suited_db"
     monkeypatch.setenv("MONGO_DBNAME", test_dbname)
 
-    # Import/reload your Flask app under the patched client
+    # Import/reload your Flask app under the patched client + env
     import app
     reload(app)
 
@@ -27,10 +29,11 @@ def client_and_db(monkeypatch):
     app.app.config["TESTING"] = True
     client = app.app.test_client()
 
-    # Ensure clean state before & after
+    # Clean slate
     app.mongo.drop_database(test_dbname)
     yield client
     app.mongo.drop_database(test_dbname)
+
 
 def test_register_page_renders(client_and_db):
     resp = client_and_db.get("/register")

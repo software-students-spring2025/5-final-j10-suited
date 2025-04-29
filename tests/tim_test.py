@@ -12,10 +12,12 @@ pymongo.MongoClient = mongomock.MongoClient
 
 @pytest.fixture(autouse=True)
 def configure_test_db(monkeypatch):
-    # Point at a throw‐away in-memory test database
+    # Ensure MAIL_PORT is valid
+    monkeypatch.setenv("MAIL_PORT", "587")
+    # Point at a throw‐away in-memory test DB
     monkeypatch.setenv("MONGO_DBNAME", "myapp_test")
 
-    # Import/reload your Flask app under the patched client
+    # Import/reload your Flask app under the patched client + env
     import app
     reload(app)
 
@@ -60,7 +62,6 @@ def create_user(db):
 
 @pytest.fixture
 def login_user(client, create_user):
-    # Create a verified user and log in
     user = create_user(verified=True, password="pw123")
     resp = client.post(
         "/login",
