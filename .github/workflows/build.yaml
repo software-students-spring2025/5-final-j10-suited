@@ -49,6 +49,12 @@ jobs:
           pip install pipenv
           pipenv install --deploy --ignore-pipfile
 
+      - name: Set default MONGO_URI if missing
+        run: |
+          if [ -z "$MONGO_URI" ]; then
+            echo "MONGO_URI=mongodb://localhost:27017/testdb" >> $GITHUB_ENV
+          fi
+
       - name: Run pytest
         run: |
           pipenv run pytest --maxfail=1 --disable-warnings -q
