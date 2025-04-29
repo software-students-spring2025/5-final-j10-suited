@@ -16,6 +16,7 @@ eventlet = "*"
 python-dotenv = "*"
 dotenv = "*"
 pytest = "*"
+pytest-cov = "*"
 
 [dev-packages]
 
