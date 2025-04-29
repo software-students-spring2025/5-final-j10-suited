@@ -1,10 +1,15 @@
 import pytest
+import pymongo
+import mongomock
+import mongomock.gridfs
 from bson import ObjectId
 from werkzeug.security import generate_password_hash
 from importlib import reload
+mongomock.gridfs.enable_gridfs_integration()
 
 @pytest.fixture(autouse=True)
 def configure_test_db(monkeypatch):
+    monkeypatch.setattr(pymongo, "MongoClient", mongomock.MongoClient)
     # point at a throw‐away test database
     monkeypatch.setenv("MONGO_DBNAME", "myapp_test")
     import app

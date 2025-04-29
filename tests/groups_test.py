@@ -1,11 +1,16 @@
 import os
 import pytest
+import pymongo
+import mongomock
+import mongomock.gridfs
 from bson import ObjectId
 from app import app, mongo
 from importlib import reload
+mongomock.gridfs.enable_gridfs_integration()
 
 @pytest.fixture(autouse=True)
 def client_and_db(monkeypatch):
+    monkeypatch.setattr(pymongo, "MongoClient", mongomock.MongoClient)
     test_dbname = "test_j10_suited_db"
     monkeypatch.setenv("MONGO_DBNAME", test_dbname)
     import app

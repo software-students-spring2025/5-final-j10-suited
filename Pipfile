@@ -16,6 +16,7 @@ eventlet = "*"
 dotenv = "*"
 pytest = "*"
 python-dotenv = "*"
+mongomock = "*"
 
 [dev-packages]
 mongomock = "*"
