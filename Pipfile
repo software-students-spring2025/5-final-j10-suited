@@ -17,6 +17,7 @@ python-dotenv = "*"
 pytest = "*"
 
 [dev-packages]
+mongomock = "*"
 
 [requires]
 python_version = "3.13"
