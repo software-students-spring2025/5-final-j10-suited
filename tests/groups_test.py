@@ -2,21 +2,21 @@ import os
 import pytest
 from bson import ObjectId
 from app import app, mongo
+from importlib import reload
 
 @pytest.fixture(autouse=True)
-def client_and_db(tmp_path, monkeypatch):
-    # Point to a temporary test database
+def client_and_db(monkeypatch):
     test_dbname = "test_j10_suited_db"
     monkeypatch.setenv("MONGO_DBNAME", test_dbname)
-    client = app.test_client()
-    app.config["TESTING"] = True
+    import app
+    reload(app)
+    app.app.config["TESTING"] = True
+    client = app.app.test_client()
 
-    # Drop any leftover from prior runs
-    mongo.drop_database(test_dbname)
+    app.mongo.drop_database(test_dbname)
     yield client
 
-    # Clean up
-    mongo.drop_database(test_dbname)
+    app.mongo.drop_database(test_dbname)
 
 
 def test_register_page_renders(client_and_db):
